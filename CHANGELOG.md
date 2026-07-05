@@ -11,8 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Mocked HTTP smoke tests for the scraper (`tests/test_scraper_mocked.py`).
 - HTML fixtures for stable category-page and detail-page parsing tests.
+- REST API server (`vercel-templates serve`) with FastAPI/uvicorn.
+- `GET /health`, `/templates`, `/templates/{slug}`, and `/categories` endpoints.
+- Hermes skill wrapper at `skills/vercel-templates/SKILL.md`.
 - This `CHANGELOG.md`.
-- Added `responses` to dev extras for HTTP mocking in tests.
+- Added `responses` and `httpx` to dev extras for HTTP mocking in tests.
+- Added `fastapi` and `uvicorn` under `server` optional dependencies.
 
 ## [0.2.0] - 2026-07-05
 

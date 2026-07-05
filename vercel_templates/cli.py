@@ -124,5 +124,25 @@ def stats() -> None:
     console.print(table)
 
 
+@app.command()
+def serve(
+    host: str = typer.Option("127.0.0.1", "--host", "-h", help="Bind host"),
+    port: int = typer.Option(8000, "--port", "-p", help="Bind port"),
+    reload: bool = typer.Option(False, "--reload", help="Enable auto-reload (dev)"),
+) -> None:
+    """Start the REST API server."""
+    try:
+        import uvicorn
+    except ImportError as exc:
+        console.print(
+            "[red]uvicorn is required for the server. "
+            "Install it with: pip install 'vercel-templates-discovery[server]'[/red]"
+        )
+        raise typer.Exit(1) from exc
+
+    console.print(f"[bold green]Starting server at http://{host}:{port}[/bold green]")
+    uvicorn.run("vercel_templates.server:app", host=host, port=port, reload=reload)
+
+
 if __name__ == "__main__":
     app()

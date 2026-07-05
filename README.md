@@ -81,6 +81,26 @@ The scraper uses `fetch` + `cheerio` + regex to parse Vercel's server-rendered p
 | `show SLUG` | Show full details for a template |
 | `export` | Dump the indexed catalog to JSON |
 | `stats` | Show framework/category counts |
+| `serve` | Start the REST API server |
+
+## REST API server
+
+Run the server with:
+
+```bash
+vercel-templates serve
+# or
+vercel-templates serve --host 0.0.0.0 --port 8080
+```
+
+Endpoints:
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /health` | Health check |
+| `GET /templates?q=...&limit=...` | Search or list templates |
+| `GET /templates/{slug}` | Get one template by slug (e.g. `/templates/next.js/chatbot`) |
+| `GET /categories` | List frameworks and use cases |
 
 ## Agentic usage
 
