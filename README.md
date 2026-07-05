@@ -11,6 +11,9 @@ pip install vercel-templates-discovery
 # Or install locally for development
 pip install -e ".[dev]"
 
+# Or run via Docker
+docker run --rm ghcr.io/imkxnnny/vercel-templates-discovery:latest vercel-templates --help
+
 # Index the catalog
 vercel-templates index
 
@@ -28,9 +31,10 @@ vercel-templates export --output templates.json
 ## Quick start (TypeScript / WSL)
 
 ```bash
-# Install globally from npm (once published)
-npm install -g @kxnnymusic/vercel-templates-discovery
+# Install globally from npm (published)
+npm install -g @imkxnny/vercel-templates-discovery
 
+# Or work locally
 cd ts
 npm install
 

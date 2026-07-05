@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `responses` and `httpx` to dev extras for HTTP mocking in tests.
 - Added `fastapi` and `uvicorn` under `server` optional dependencies.
 - Published to PyPI and npm (M4).
+- Docker image with Python + TypeScript CLI (`Dockerfile`, `.dockerignore`, `publish-docker.yml`).
 
 ## [0.2.0] - 2026-07-05
 

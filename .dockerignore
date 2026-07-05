@@ -1,0 +1,53 @@
+# Python / packaging
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.venv/
+venv/
+ENV/
+env/
+build/
+dist/
+*.egg
+*.whl
+
+# Node.js
+node_modules/
+ts/dist/
+ts/*.tsbuildinfo
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Project runtime artifacts
+*.db
+templates.json
+.vercel_templates/
+
+# Git / CI
+.git/
+.github/
+.gitignore
+
+# Docs and tests
+*.markdown
+.agent/
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Docker
+Dockerfile
+.dockerignore

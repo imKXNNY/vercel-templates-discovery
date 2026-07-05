@@ -28,6 +28,8 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
 - **M4 deliverables implemented (Issues #8, #9):**
   - PyPI: `pip install vercel-templates-discovery` (v0.2.1)
   - npm: `npm install -g @imkxnny/vercel-templates-discovery` (v0.2.1)
+- **M4 Docker image implemented (Issue #10):**
+  - `docker run --rm ghcr.io/imkxnnny/vercel-templates-discovery:latest vercel-templates --help`
 - JSON output for agent consumption
 - CI, tests, README, CONTRIBUTING guide, CHANGELOG
 - ADOS framework adopted at repo layer
