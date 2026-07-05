@@ -5,10 +5,13 @@
 ## Quick start (Python)
 
 ```bash
-# 1. Install
+# Install from PyPI (once published)
+pip install vercel-templates-discovery
+
+# Or install locally for development
 pip install -e ".[dev]"
 
-# 2. Index the catalog
+# Index the catalog
 vercel-templates index
 
 # 3. Search
@@ -25,6 +28,9 @@ vercel-templates export --output templates.json
 ## Quick start (TypeScript / WSL)
 
 ```bash
+# Install globally from npm (once published)
+npm install -g @kxnnymusic/vercel-templates-discovery
+
 cd ts
 npm install
 

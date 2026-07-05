@@ -61,3 +61,11 @@ tests/fixtures/real/*.json
 
 # Test fixtures (runtime/generated)
 tests/fixtures/*.json
+
+# Ignore environment files containing secrets
+.env
+.env.local
+.env.*.local
+
+# But keep the example template for new developers
+!.env.example

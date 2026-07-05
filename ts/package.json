@@ -1,5 +1,5 @@
 {
-  "name": "@kxnnymusic/vercel-templates-discovery",
+  "name": "@imkxnny/vercel-templates-discovery",
   "version": "0.2.0",
   "description": "Agentic discovery for Vercel Templates",
   "type": "module",
@@ -13,8 +13,19 @@
     "dev": "tsx src/cli.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "typecheck:all": "tsc -p tsconfig.test.json --noEmit"
+    "typecheck:all": "tsc -p tsconfig.test.json --noEmit",
+    "prepublishOnly": "npm run build"
   },
+  "files": [
+    "dist/**",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "types": "dist/index.d.ts",
   "dependencies": {
     "better-sqlite3": "^11.0.0",
     "cheerio": "^1.0.0-rc.12",
