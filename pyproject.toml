@@ -44,6 +44,7 @@ dev = [
 
 [project.scripts]
 vercel-templates = "vercel_templates.cli:app"
+vercel-templates-mcp = "vercel_templates.mcp_server:main"
 
 [project.urls]
 Homepage = "https://github.com/imKXNNY/vercel-templates-discovery"
