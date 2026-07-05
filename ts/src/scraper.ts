@@ -21,7 +21,7 @@ export interface ScraperOptions {
 export class VercelTemplateScraper {
   private delay: number;
   private maxWorkers: number;
-  private db: TemplateDatabase;
+  readonly db: TemplateDatabase;
 
   constructor(options: ScraperOptions = {}) {
     this.delay = options.delay ?? 0.5;

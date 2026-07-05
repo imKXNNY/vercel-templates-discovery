@@ -1,5 +1,4 @@
 import { VercelTemplateScraper } from "./scraper.js";
-import { TemplateDatabase } from "./db.js";
 import type { JsonRpcRequest, JsonRpcResponse } from "./types.js";
 
 interface MCPServerOptions {
@@ -8,11 +7,11 @@ interface MCPServerOptions {
 
 export class MCPServer {
   private scraper: VercelTemplateScraper;
-  private db: TemplateDatabase;
+  private db: VercelTemplateScraper["db"];
 
   constructor(options: MCPServerOptions = {}) {
     this.scraper = new VercelTemplateScraper({ dbPath: options.dbPath });
-    this.db = new TemplateDatabase(options.dbPath);
+    this.db = this.scraper.db;
   }
 
   run() {
@@ -134,9 +133,20 @@ export class MCPServer {
       }
 
       if (method === "tools/call") {
-        const params = (req.params || {}) as Record<string, unknown>;
-        const name = params.name as string;
-        const args = (params.arguments || {}) as Record<string, unknown>;
+        const rawParams = req.params;
+        if (!rawParams || typeof rawParams !== "object" || Array.isArray(rawParams)) {
+          return error(-32602, "Invalid params");
+        }
+        const params = rawParams as Record<string, unknown>;
+        const name = typeof params.name === "string" ? params.name : "";
+        const args =
+          params.arguments && typeof params.arguments === "object" && !Array.isArray(params.arguments)
+            ? (params.arguments as Record<string, unknown>)
+            : {};
+
+        if (!name) {
+          return error(-32602, "Missing tool name");
+        }
 
         if (name === "search_templates") {
           const query = String(args.query || "");
@@ -203,7 +213,8 @@ export class MCPServer {
   private send(resp: JsonRpcResponse) {
     const data = JSON.stringify(resp);
     const encoded = Buffer.from(data, "utf-8");
-    process.stdout.write(`Content-Length: ${encoded.length}\n\n`);
+    const headers = `Content-Length: ${encoded.length}\r\n\r\n`;
+    process.stdout.write(headers);
     process.stdout.write(encoded);
   }
 

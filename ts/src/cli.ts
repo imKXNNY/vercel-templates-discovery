@@ -8,6 +8,15 @@ program
   .description("Agentic discovery for Vercel Templates")
   .version("0.2.0");
 
+function parseConcurrency(raw: string | undefined): number {
+  const n = raw === undefined ? 8 : Number(raw);
+  if (!Number.isFinite(n) || n < 1 || n > 64) {
+    console.error(`Invalid concurrency: ${raw}. Using default 8.`);
+    return 8;
+  }
+  return Math.floor(n);
+}
+
 program
   .command("index")
   .description("Re-index the full Vercel Templates catalog")
@@ -16,7 +25,7 @@ program
   .action(async (options) => {
     const scraper = new VercelTemplateScraper({ dbPath: options.db });
     try {
-      const count = await scraper.index(Number(options.concurrency));
+      const count = await scraper.index(parseConcurrency(options.concurrency));
       console.log(`Indexed ${count} templates`);
     } finally {
       scraper.close();
@@ -38,7 +47,9 @@ program
       } else {
         for (const t of rows) {
           console.log(`${t.title} — ${t.slug}`);
-          console.log(`  ${t.description.slice(0, 120)}...`);
+          const snippet = t.description.slice(0, 120);
+          const ellipsis = t.description.length > 120 ? "..." : "";
+          console.log(`  ${snippet}${ellipsis}`);
         }
       }
     } finally {

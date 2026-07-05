@@ -12,10 +12,6 @@ import {
 import { TemplateDatabase } from "../src/db.js";
 import type { TemplateInput } from "../src/types.js";
 
-const sampleFlightPayload =
-  'self.__next_f.push([1,"S1:{\\"readmeText\\":\\"$REF123\\"}"])' +
-  "REF123:\"\\n# Hello\\nThis is a test.\"\nself.__next_f.push([1,\"REF123:ignored\"])";
-
 describe("scraper helpers", () => {
   it("unescapes HTML entities", () => {
     expect(unescapeHtml("A &amp; B")).toBe("A & B");

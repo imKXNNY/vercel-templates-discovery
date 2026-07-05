@@ -12,7 +12,8 @@
     "build": "tsc",
     "dev": "tsx src/cli.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "typecheck:all": "tsc -p tsconfig.test.json --noEmit"
   },
   "dependencies": {
     "better-sqlite3": "^11.0.0",
