@@ -25,7 +25,7 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
   - Tests pass in WSL; `typecheck:all` covers src + tests + scripts
   - Merged: https://github.com/imKXNNY/vercel-templates-discovery/pull/17
 - JSON output for agent consumption
-- CI, tests, README, CONTRIBUTING guide
+- CI, tests, README, CONTRIBUTING guide, CHANGELOG
 - ADOS framework adopted at repo layer
 - 5 milestones and 14 roadmap issues created
 

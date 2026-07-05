@@ -56,7 +56,8 @@ dist/
 .vercel_templates/
 
 # Real fetched fixtures (keep synthetic ones)
-tests/fixtures/*.html
+tests/fixtures/real/*.html
+tests/fixtures/real/*.json
 
-# Test fixtures
+# Test fixtures (runtime/generated)
 tests/fixtures/*.json
