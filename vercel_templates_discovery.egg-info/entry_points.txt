@@ -1,0 +1,2 @@
+[console_scripts]
+vercel-templates = vercel_templates.cli:app

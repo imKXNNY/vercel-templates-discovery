@@ -1,0 +1,12 @@
+README.md
+pyproject.toml
+vercel_templates/__init__.py
+vercel_templates/cli.py
+vercel_templates/config.py
+vercel_templates/scraper.py
+vercel_templates_discovery.egg-info/PKG-INFO
+vercel_templates_discovery.egg-info/SOURCES.txt
+vercel_templates_discovery.egg-info/dependency_links.txt
+vercel_templates_discovery.egg-info/entry_points.txt
+vercel_templates_discovery.egg-info/requires.txt
+vercel_templates_discovery.egg-info/top_level.txt
