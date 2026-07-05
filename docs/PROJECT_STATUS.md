@@ -23,7 +23,7 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
   - Feature parity with Python CLI: index, search, show, stats
   - MCP server with spec-compliant stdio JSON-RPC framing
   - Tests pass in WSL; `typecheck:all` covers src + tests + scripts
-  - Open PR: https://github.com/imKXNNY/vercel-templates-discovery/pull/new/feature/7-typescript-port
+  - Merged: https://github.com/imKXNNY/vercel-templates-discovery/pull/17
 - JSON output for agent consumption
 - CI, tests, README, CONTRIBUTING guide
 - ADOS framework adopted at repo layer
@@ -31,10 +31,9 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
 
 ## Priority backlog (next-best actions)
 
-1. **Merge TypeScript port PR** (#7) — pending Kenny review / auto-merge
-2. **Semantic search** (#11) — intent-based discovery
-3. **PyPI / npm publish** (#8, #9) — frictionless adoption
-4. **ToS review** (#13) — gating public release
+1. **Semantic search** (#11) — intent-based discovery
+2. **PyPI / npm publish** (#8, #9) — frictionless adoption
+3. **ToS review** (#13) — gating public release
 
 ## Decision log
 
@@ -53,6 +52,4 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
 
 ## Notes for next session
 
-- Issue #7 is implemented and pushed as `feature/7-typescript-port`. Review/merge is the next step.
-- Remaining open backlog: 13 issues. Top candidates: semantic search (#11), PyPI/npm packaging (#8, #9), or ToS review (#13).
-- The other open PR and 3 active branches should be reconciled before merging #7 to avoid conflicts.
+- Issue #7 is merged. Remaining open backlog: 13 issues. Next candidates: semantic search (#11), PyPI/npm packaging (#8, #9), or ToS review (#13).
