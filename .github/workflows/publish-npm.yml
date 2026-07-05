@@ -5,9 +5,15 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: read
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/@imkxnny/vercel-templates-discovery
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
