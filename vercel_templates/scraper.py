@@ -1,26 +1,30 @@
 import codecs
 import html
+import logging
 import re
 import sqlite3
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from pathlib import Path
-from typing import Any, Optional
+from typing import Any, cast
 
 import requests
 from bs4 import BeautifulSoup
 
 from .config import BASE_URL, DEFAULT_CATEGORIES, FRAMEWORK_CATEGORIES, cache_db_path, user_agent
 
+logger = logging.getLogger(__name__)
+
 
 class VercelTemplateScraper:
     def __init__(self, delay: float = 0.5, max_workers: int = 8):
         self.session = requests.Session()
-        self.session.headers.update({
-            "User-Agent": user_agent(),
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9",
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": user_agent(),
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.9",
+            }
+        )
         self.delay = delay
         self.max_workers = max_workers
         self.db_path = cache_db_path()
@@ -73,19 +77,19 @@ class VercelTemplateScraper:
         self._init_db()
 
     def _get(self, url: str, retries: int = 3) -> requests.Response:
-        last_exc: Optional[Exception] = None
+        last_exc: Exception | None = None
         for attempt in range(retries):
             try:
                 resp = self.session.get(url, timeout=30)
                 if resp.status_code == 200:
                     return resp
                 if resp.status_code in (429, 503):
-                    time.sleep(2 ** attempt)
+                    time.sleep(2**attempt)
                     continue
                 resp.raise_for_status()
             except Exception as exc:
                 last_exc = exc
-                time.sleep(1.5 ** attempt)
+                time.sleep(1.5**attempt)
         raise last_exc or RuntimeError(f"Failed to fetch {url}")
 
     def discover_templates(self) -> dict[str, dict[str, Any]]:
@@ -112,7 +116,7 @@ class VercelTemplateScraper:
                         }
                 time.sleep(self.delay)
             except Exception as exc:
-                print(f"Warning: failed to discover {category}: {exc}")
+                logger.warning("Failed to discover %s: %s", category, exc)
         return templates
 
     def enrich_template(self, slug: str) -> dict[str, Any]:
@@ -128,9 +132,7 @@ class VercelTemplateScraper:
         description = desc_tag.get_text(strip=True) if desc_tag else None
 
         # Fallback: parse the Next.js RSC flight payload embedded in scripts
-        scripts = "\n".join(
-            tag.string for tag in soup.find_all("script") if tag.string
-        )
+        scripts = "\n".join(tag.string for tag in soup.find_all("script") if tag.string)
 
         github_url = self._extract_github_url(scripts)
         owner = None
@@ -172,7 +174,7 @@ class VercelTemplateScraper:
             "indexed_at": int(time.time()),
         }
 
-    def index(self, concurrency: Optional[int] = None) -> int:
+    def index(self, concurrency: int | None = None) -> int:
         self.reset_db()
         templates = self.discover_templates()
         if not templates:
@@ -181,10 +183,7 @@ class VercelTemplateScraper:
         workers = concurrency or self.max_workers
         enriched: list[dict[str, Any]] = []
         with ThreadPoolExecutor(max_workers=workers) as executor:
-            futures = {
-                executor.submit(self.enrich_template, slug): slug
-                for slug in templates
-            }
+            futures = {executor.submit(self.enrich_template, slug): slug for slug in templates}
             for future in as_completed(futures):
                 slug = futures[future]
                 try:
@@ -194,10 +193,12 @@ class VercelTemplateScraper:
                         category = templates[slug]["framework"]
                         if category in FRAMEWORK_CATEGORIES:
                             data["frameworks"] = category
-                    data["install_command"] = self._select_install_command(data, data.get("install_command"))
+                    data["install_command"] = self._select_install_command(
+                        data, data.get("install_command")
+                    )
                     enriched.append(data)
                 except Exception as exc:
-                    print(f"Warning: failed to enrich {slug}: {exc}")
+                    logger.warning("Failed to enrich %s: %s", slug, exc)
 
         self._save_templates(enriched)
         return len(enriched)
@@ -263,7 +264,7 @@ class VercelTemplateScraper:
         conn.commit()
         conn.close()
 
-    def _extract_github_url(self, text: str) -> Optional[str]:
+    def _extract_github_url(self, text: str) -> str | None:
         """Extract the githubUrl from the Next.js flight payload."""
         return _extract_json_string(text, "githubUrl")
 
@@ -300,7 +301,7 @@ class VercelTemplateScraper:
             )
         )
 
-    def _select_install_command(self, t: dict[str, Any], extracted: Optional[str]) -> str:
+    def _select_install_command(self, t: dict[str, Any], extracted: str | None) -> str:
         """Prefer scaffold/clone commands; synthesize if the extracted one is generic."""
         synthesized = self._synthesize_install_command(t)
         if extracted and self._is_scaffold_or_clone(extracted):
@@ -326,7 +327,7 @@ class VercelTemplateScraper:
         conn.close()
         return rows
 
-    def get(self, slug: str) -> Optional[dict[str, Any]]:
+    def get(self, slug: str) -> dict[str, Any] | None:
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.execute("SELECT * FROM templates WHERE slug = ?", (slug,))
@@ -334,11 +335,11 @@ class VercelTemplateScraper:
         conn.close()
         return dict(row) if row else None
 
-    def all_templates(self, limit: Optional[int] = None) -> list[dict[str, Any]]:
+    def all_templates(self, limit: int | None = None) -> list[dict[str, Any]]:
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         sql = "SELECT * FROM templates ORDER BY title"
-        params: tuple = ()
+        params: tuple[Any, ...] = ()
         if limit:
             sql += " LIMIT ?"
             params = (limit,)
@@ -361,7 +362,7 @@ def _unescape_json_string(text: str) -> str:
     return html.unescape(decoded)
 
 
-def _extract_json_string(text: str, key: str) -> Optional[str]:
+def _extract_json_string(text: str, key: str) -> str | None:
     # The Next.js flight payload escapes quotes as \" in the inline script.
     # Match both escaped and unescaped forms.
     pattern = rf'\\"{re.escape(key)}\\":\s*\\"([^\\"]+)\\"'
@@ -389,7 +390,7 @@ def _extract_sidebar_values(text: str, label: str) -> list[str]:
     return values
 
 
-def _extract_readme_text(text: str) -> Optional[str]:
+def _extract_readme_text(text: str) -> str | None:
     # Strategy 1: Next.js RSC flight payload uses a deferred chunk reference.
     # Pattern: "readmeText":"$REF"  then later  REF:<prefix>,"])</script>
     # <script>self.__next_f.push([1,"<markdown content>"])
@@ -417,7 +418,7 @@ def _extract_readme_text(text: str) -> Optional[str]:
     return None
 
 
-def _extract_flight_chunk(text: str, ref_id: str) -> Optional[str]:
+def _extract_flight_chunk(text: str, ref_id: str) -> str | None:
     """Extract the deferred flight chunk referenced by `ref_id`."""
     marker = f"{ref_id}:"
     idx = text.find(marker)
@@ -439,7 +440,7 @@ def _extract_flight_chunk(text: str, ref_id: str) -> Optional[str]:
     return None
 
 
-def _extract_install_command(readme_text: str, scripts: str) -> Optional[str]:
+def _extract_install_command(readme_text: str, scripts: str) -> str | None:
     # First, try to find a scaffold / clone / create command in the readme text
     scaffold_patterns = (
         "npx create-",
@@ -469,5 +470,5 @@ def _extract_install_command(readme_text: str, scripts: str) -> Optional[str]:
     ]:
         match = re.search(pattern, scripts)
         if match:
-            return _unescape(match.group(0).strip().strip('"'))
+            return cast("str", _unescape(match.group(0).strip().strip('"')))
     return None

@@ -6,7 +6,7 @@ import sys
 def send_message(proc, message):
     data = json.dumps(message)
     encoded = data.encode("utf-8")
-    header = f"Content-Length: {len(encoded)}\n\n".encode("utf-8")
+    header = f"Content-Length: {len(encoded)}\n\n".encode()
     proc.stdin.write(header)
     proc.stdin.write(encoded)
     proc.stdin.flush()

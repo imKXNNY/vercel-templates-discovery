@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional
 
 BASE_URL = "https://vercel.com"
 
@@ -44,8 +43,20 @@ DEFAULT_CATEGORIES = [
 ]
 
 FRAMEWORK_CATEGORIES = {
-    "next.js", "nuxt", "svelte", "astro", "hono", "express", "flask",
-    "remix", "vue", "angular", "react", "solid", "qwik", "other",
+    "next.js",
+    "nuxt",
+    "svelte",
+    "astro",
+    "hono",
+    "express",
+    "flask",
+    "remix",
+    "vue",
+    "angular",
+    "react",
+    "solid",
+    "qwik",
+    "other",
 }
 
 
