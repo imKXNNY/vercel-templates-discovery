@@ -1,0 +1,71 @@
+{
+  "id": 5,
+  "slug": "/templates/next.js/chatbot",
+  "framework": "",
+  "title": "Chatbot",
+  "description": "A full-featured, hackable Next.js AI chatbot built by 
+Vercel",
+  "github_url": "https://github.com/vercel/chatbot",
+  "owner": "vercel",
+  "repository": "chatbot",
+  "use_cases": "",
+  "frameworks": "",
+  "css": "",
+  "databases": "",
+  "authentication": "",
+  "cms": "",
+  "experimentation": "",
+  "readme_text": "# Chatbot\n\nChatbot (formerly AI Chatbot) is a free, 
+open-source template built with Next.js and the AI SDK that helps you quickly 
+build powerful chatbot applications.\n\n<p align=\"center\">\n  <a 
+href=\"https://chatbot.ai-sdk.dev/docs\"><strong>Read Docs</strong></a> Â·\n  
+<a href=\"#features\"><strong>Features</strong></a> Â·\n  <a 
+href=\"#model-providers\"><strong>Model Providers</strong></a> Â·\n  <a 
+href=\"#deploy-your-own\"><strong>Deploy Your Own</strong></a> Â·\n  <a 
+href=\"#running-locally\"><strong>Running 
+locally</strong></a>\n</p>\n<br/>\n\n## Features\n\n- 
+[Next.js](https://nextjs.org) App Router\n  - Advanced routing for seamless 
+navigation and performance\n  - React Server Components (RSCs) and Server 
+Actions for server-side rendering and increased performance\n- [AI 
+SDK](https://ai-sdk.dev/docs/introduction)\n  - Unified API for generating 
+text, structured objects, and tool calls with LLMs\n  - Hooks for building 
+dynamic chat and generative user interfaces\n  - Supports OpenAI, Anthropic, 
+Google, xAI, and other model providers via AI Gateway\n- 
+(https://ui.shadcn.com)\n  - Styling with [Tailwind 
+CSS](https://tailwindcss.com)\n  - Component primitives from [Radix 
+UI](https://radix-ui.com) for accessibility and flexibility\n- Data 
+Persistence\n  - [Neon Serverless 
+Postgres](https://vercel.com/marketplace/neon) for saving chat history and user
+data\n  - [Vercel Blob](https://vercel.com/storage/blob) for efficient file 
+storage\n- [Auth.js](https://authjs.dev)\n  - Simple and secure 
+authentication\n\n## Model Providers\n\nThis template uses the [Vercel AI 
+Gateway](https://vercel.com/docs/ai-gateway) to access multiple AI models 
+through a unified interface. Models are configured in `lib/ai/models.ts` with 
+per-model provider routing. Included models: Mistral, Moonshot, DeepSeek, 
+OpenAI, and xAI.\n\n### AI Gateway Authentication\n\n**For Vercel 
+deployments**: Authentication is handled automatically via OIDC 
+tokens.\n\n**For non-Vercel deployments**: You need to provide an AI Gateway 
+API key by setting the `AI_GATEWAY_API_KEY` environment variable in your 
+`.env.local` file.\n\nWith the [AI SDK](https://ai-sdk.dev/docs/introduction), 
+you can also switch to direct LLM providers like [OpenAI](https://openai.com), 
+[Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and 
+(https://ai-sdk.dev/providers/ai-sdk-providers) with just a few lines of 
+code.\n\n## Deploy Your Own\n\nYou can deploy your own version of Chatbot to 
+Vercel with one click:\n\n[![Deploy with 
+Vercel](https://vercel.com/button)](https://vercel.com/templates/next.js/chatbo
+t)\n\n## Running locally\n\nYou will need to use the environment variables 
+(.env.example) to run Chatbot. It's recommended you use [Vercel Environment 
+Variables](https://vercel.com/docs/projects/environment-variables) for this, 
+but a `.env` file is all that is necessary.\n\n> Note: You should not commit 
+your `.env` file or it will expose secrets that will allow others to control 
+access to your various AI and authentication provider accounts.\n\n1. Install 
+Vercel CLI: `npm i -g vercel`\n2. Link local instance with Vercel and GitHub 
+accounts (creates `.vercel` directory): `vercel link`\n3. Download your 
+environment variables: `vercel env pull`\n\n```bash\npnpm install\npnpm 
+db:migrate # Setup database or apply latest database changes\npnpm 
+dev\n```\n\nYour app template should now be running on 
+(http://localhost:3000).\n",
+  "install_command": "git clone https://github.com/vercel/chatbot",
+  "detail_url": "https://vercel.com/templates/next.js/chatbot",
+  "indexed_at": 1783221506
+}

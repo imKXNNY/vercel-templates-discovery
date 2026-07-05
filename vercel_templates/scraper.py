@@ -1,3 +1,5 @@
+import codecs
+import html
 import re
 import sqlite3
 import time
@@ -8,7 +10,7 @@ from typing import Any, Optional
 import requests
 from bs4 import BeautifulSoup
 
-from .config import BASE_URL, DEFAULT_CATEGORIES, cache_db_path, user_agent
+from .config import BASE_URL, DEFAULT_CATEGORIES, FRAMEWORK_CATEGORIES, cache_db_path, user_agent
 
 
 class VercelTemplateScraper:
@@ -92,10 +94,10 @@ class VercelTemplateScraper:
             url = f"{BASE_URL}/templates/{category}"
             try:
                 resp = self._get(url)
-                html = resp.text
+                html_text = resp.text
                 cards = re.findall(
                     r'data-template-card-wrapper[^>]*href="(/templates/[^"]+)".*?<h3[^>]*>([^<]+)</h3>.*?line-clamp-2[^>]*>([^<]+)',
-                    html,
+                    html_text,
                     re.DOTALL,
                 )
                 for href, title, desc in cards:
@@ -116,8 +118,8 @@ class VercelTemplateScraper:
     def enrich_template(self, slug: str) -> dict[str, Any]:
         url = f"{BASE_URL}{slug}"
         resp = self._get(url)
-        html = resp.text
-        soup = BeautifulSoup(html, "html.parser")
+        html_text = resp.text
+        soup = BeautifulSoup(html_text, "html.parser")
 
         title_tag = soup.find("h1")
         title = title_tag.get_text(strip=True) if title_tag else None
@@ -130,7 +132,7 @@ class VercelTemplateScraper:
             tag.string for tag in soup.find_all("script") if tag.string
         )
 
-        github_url = _extract_json_string(scripts, "githubUrl")
+        github_url = self._extract_github_url(scripts)
         owner = None
         repository = None
         if github_url:
@@ -189,9 +191,10 @@ class VercelTemplateScraper:
                     data = future.result()
                     # Preserve the category/framework from discovery if enrich didn't set it
                     if not data.get("frameworks") and templates[slug].get("framework"):
-                        data["frameworks"] = templates[slug]["framework"]
-                    if not data.get("install_command"):
-                        data["install_command"] = self._synthesize_install_command(data)
+                        category = templates[slug]["framework"]
+                        if category in FRAMEWORK_CATEGORIES:
+                            data["frameworks"] = category
+                    data["install_command"] = self._select_install_command(data, data.get("install_command"))
                     enriched.append(data)
                 except Exception as exc:
                     print(f"Warning: failed to enrich {slug}: {exc}")
@@ -260,6 +263,10 @@ class VercelTemplateScraper:
         conn.commit()
         conn.close()
 
+    def _extract_github_url(self, text: str) -> Optional[str]:
+        """Extract the githubUrl from the Next.js flight payload."""
+        return _extract_json_string(text, "githubUrl")
+
     def _synthesize_install_command(self, t: dict[str, Any]) -> str:
         """Best-effort install command when none was extracted from the README."""
         slug = t.get("slug", "")
@@ -278,6 +285,29 @@ class VercelTemplateScraper:
             example = parts[-1]
             return f"npx create-next-app --example {example} my-app"
         return ""
+
+    def _is_scaffold_or_clone(self, command: str) -> bool:
+        """Return True if the command scaffolds a project or clones a repo."""
+        return command.startswith(
+            (
+                "npx create-",
+                "npx create ",
+                "npm create ",
+                "yarn create ",
+                "bunx create-",
+                "bun create ",
+                "git clone ",
+            )
+        )
+
+    def _select_install_command(self, t: dict[str, Any], extracted: Optional[str]) -> str:
+        """Prefer scaffold/clone commands; synthesize if the extracted one is generic."""
+        synthesized = self._synthesize_install_command(t)
+        if extracted and self._is_scaffold_or_clone(extracted):
+            return extracted
+        if synthesized:
+            return synthesized
+        return extracted or ""
 
     def search(self, query: str, limit: int = 10) -> list[dict[str, Any]]:
         conn = sqlite3.connect(self.db_path)
@@ -319,9 +349,16 @@ class VercelTemplateScraper:
 
 
 def _unescape(text: str) -> str:
-    import html
-
     return html.unescape(text)
+
+
+def _unescape_json_string(text: str) -> str:
+    """Decode a JSON-style escaped string (handles \\n, \\t, \\\", \\\\, \\uXXXX)."""
+    try:
+        decoded = codecs.decode(text, "unicode_escape")
+    except (UnicodeDecodeError, ValueError):
+        decoded = text
+    return html.unescape(decoded)
 
 
 def _extract_json_string(text: str, key: str) -> Optional[str]:
@@ -339,10 +376,8 @@ def _extract_json_string(text: str, key: str) -> Optional[str]:
 
 def _extract_sidebar_values(text: str, label: str) -> list[str]:
     values = []
-    # Match the escaped label in the flight payload
     for m in re.finditer(rf'\\"children\\":\\"{re.escape(label)}\\"', text):
         window = text[m.end() : m.end() + 900]
-        # Find the next clickable link values
         vals = re.findall(r'\\"children\\":\\"([^\\"]{1,60})\\"', window)
         for v in vals:
             v = _unescape(v)
@@ -355,32 +390,73 @@ def _extract_sidebar_values(text: str, label: str) -> list[str]:
 
 
 def _extract_readme_text(text: str) -> Optional[str]:
-    # The README is rendered as a markdown-like string in the flight payload.
-    # Try to find a large escaped block near "readmeText" or markdown headings.
+    # Strategy 1: Next.js RSC flight payload uses a deferred chunk reference.
+    # Pattern: "readmeText":"$REF"  then later  REF:<prefix>,"])</script>
+    # <script>self.__next_f.push([1,"<markdown content>"])
+    ref_match = re.search(r'\\"readmeText\\":\\"\$(\w+)\\"', text)
+    if ref_match:
+        ref_id = ref_match.group(1)
+        raw = _extract_flight_chunk(text, ref_id)
+        if raw:
+            return _unescape_json_string(raw)
+
+    # Fallback 1: escaped JSON literal
     match = re.search(r'\\"readmeText\\":\\"([^\\"]{200,})\\"', text)
     if match:
-        raw = match.group(1)
-        return _unescape(raw)
-    # Fallback: unescaped JSON
+        return _unescape_json_string(match.group(1))
+
+    # Fallback 2: unescaped JSON literal
     match = re.search(r'"readmeText":"([^"]{200,})"', text)
     if match:
-        return _unescape(match.group(1))
-    # Fallback: find a long block of escaped text with markdown indicators
+        return _unescape_json_string(match.group(1))
+
+    # Fallback 3: long escaped markdown block
     match = re.search(r'(\\n#[^\\"]{200,})', text)
     if match:
-        return _unescape(match.group(1).replace("\\n", "\n"))
+        return _unescape_json_string(match.group(1).replace("\\n", "\n"))
+    return None
+
+
+def _extract_flight_chunk(text: str, ref_id: str) -> Optional[str]:
+    """Extract the deferred flight chunk referenced by `ref_id`."""
+    marker = f"{ref_id}:"
+    idx = text.find(marker)
+    if idx == -1:
+        return None
+    push_marker = 'self.__next_f.push([1,"'
+    push_idx = text.find(push_marker, idx)
+    if push_idx == -1:
+        return None
+    start = push_idx + len(push_marker)
+    i = start
+    while i < len(text):
+        if text[i] == "\\" and i + 1 < len(text) and text[i + 1] == '"':
+            i += 2
+        elif text[i] == '"' and i + 2 < len(text) and text[i + 1 : i + 3] == "])":
+            return text[start:i]
+        else:
+            i += 1
     return None
 
 
 def _extract_install_command(readme_text: str, scripts: str) -> Optional[str]:
-    # First, try to find a bash code block in the readme text
+    # First, try to find a scaffold / clone / create command in the readme text
+    scaffold_patterns = (
+        "npx create-",
+        "npx create ",
+        "npm create ",
+        "yarn create ",
+        "bunx create-",
+        "bun create ",
+        "git clone ",
+    )
     for block in re.findall(r"```(?:bash|sh|shell)?\n?(.*?)```", readme_text, re.DOTALL):
         for line in block.splitlines():
             line = line.strip()
-            # Prefer scaffold / clone commands
-            if line.startswith(("npx create-", "npx create ", "npm create ", "yarn create ", "git clone ", "bunx create-")):
+            if line.startswith(scaffold_patterns):
                 return line
-        # Accept any install command if no scaffold command found
+    # Fallback: any npm/yarn/pnpm/bun/npx command in a code block
+    for block in re.findall(r"```(?:bash|sh|shell)?\n?(.*?)```", readme_text, re.DOTALL):
         for line in block.splitlines():
             line = line.strip()
             if line.startswith(("npx ", "npm ", "yarn ", "pnpm ", "bun ", "bunx ")):
