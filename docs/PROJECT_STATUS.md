@@ -8,7 +8,7 @@
 
 Build the standard agentic discovery layer for Vercel Templates — a searchable, always-up-to-date catalog that AI agents and developers can query to find the best starting point for any project.
 
-## Current state (v0.2.0)
+## Current state (v0.2.1)
 
 - Working CLI indexes the full Vercel Templates gallery (~284 templates)
 - SQLite cache with FTS5 keyword search
@@ -25,6 +25,9 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
 - **M3 deliverables implemented (Issues #5, #6):**
   - Hermes skill wrapper at `skills/vercel-templates/`
   - REST API server (`vercel-templates serve`) with FastAPI/uvicorn endpoints
+- **M4 deliverables implemented (Issues #8, #9):**
+  - PyPI: `pip install vercel-templates-discovery` (v0.2.1)
+  - npm: `npm install -g @imkxnny/vercel-templates-discovery` (v0.2.1)
 - JSON output for agent consumption
 - CI, tests, README, CONTRIBUTING guide, CHANGELOG
 - ADOS framework adopted at repo layer
@@ -32,9 +35,11 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
 
 ## Priority backlog (next-best actions)
 
-1. **Semantic search** (#11) — intent-based discovery
-2. **PyPI / npm publish** (#8, #9) — frictionless adoption
-3. **ToS review** (#13) — gating public release
+1. **Docker image** (#10) — containerized distribution
+2. **Semantic search** (#11) — intent-based discovery
+3. **Template comparison** (#12) — compare/diff templates
+4. **ToS review** (#13) — gating public release
+5. **Public release v1.0.0** (#14) — final public polish
 
 ## Decision log
 
