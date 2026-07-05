@@ -18,12 +18,10 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
   - 100% have an install command
   - Next.js RSC flight deferred chunks are parsed and JSON-unescaped
 - **MCP server implemented (Issue #4):** exposes `search_templates`, `get_template`, `list_categories` via stdio JSON-RPC
-- **TypeScript / WSL port implemented (Issue #7):**
-  - Complete Node.js/TypeScript implementation under `ts/`
-  - Feature parity with Python CLI: index, search, show, stats
-  - MCP server with spec-compliant stdio JSON-RPC framing
-  - Tests pass in WSL; `typecheck:all` covers src + tests + scripts
-  - Merged: https://github.com/imKXNNY/vercel-templates-discovery/pull/17
+- **TypeScript / WSL port implemented (Issue #7):** merged via PR #17
+- **M2 deliverables implemented (Issues #2, #3):**
+  - Mocked HTTP smoke tests with `responses` + HTML fixtures
+  - `CHANGELOG.md` following Keep a Changelog format
 - JSON output for agent consumption
 - CI, tests, README, CONTRIBUTING guide, CHANGELOG
 - ADOS framework adopted at repo layer
