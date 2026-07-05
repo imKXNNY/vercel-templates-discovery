@@ -8,15 +8,13 @@
 
 Build the standard agentic discovery layer for Vercel Templates — a searchable, always-up-to-date catalog that AI agents and developers can query to find the best starting point for any project.
 
-## Current state (v0.1.0 + Issue #1 in review)
+## Current state (v0.2.0 in progress)
 
 - Working CLI indexes the full Vercel Templates gallery (~284 templates)
 - SQLite cache with FTS5 keyword search
 - Extracts title, description, GitHub URL, owner, repo, install command
-- **README extraction now implemented (Issue #1):**
-  - 234/284 templates (82.4%) have non-empty `readme_text`
-  - 100% have an install command
-  - Next.js RSC flight deferred chunks are parsed and JSON-unescaped
+- **README extraction implemented (Issue #1):** 82.4% of templates have README text
+- **MCP server implemented (Issue #4):** exposes `search_templates`, `get_template`, `list_categories` via stdio JSON-RPC
 - JSON output for agent consumption
 - CI, tests, README, CONTRIBUTING guide
 - ADOS framework adopted at repo layer
@@ -24,11 +22,10 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
 
 ## Priority backlog (next-best actions)
 
-1. **MCP server** (#4) — highest agent-impact
-2. **WSL / TypeScript port** (#7) — solves Windows dependency pain
-3. **Semantic search** (#11) — intent-based discovery
-4. **PyPI / npm publish** (#8, #9) — frictionless adoption
-5. **ToS review** (#13) — gating public release
+1. **WSL / TypeScript port** (#7) — solves Windows dependency pain, enables better distribution
+2. **Semantic search** (#11) — intent-based discovery
+3. **PyPI / npm publish** (#8, #9) — frictionless adoption
+4. **ToS review** (#13) — gating public release
 
 ## Decision log
 
@@ -36,14 +33,14 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
 - Use pure Python (requests + BeautifulSoup) for now; Crawl4AI failed on MSYS native deps.
 - Nightly re-index cron keeps the local cache fresh.
 - ADOS layer precedence: repo > ADOS_HOME > package fallback. Repo layer is active.
+- Discord delivery not configured on native Windows Hermes; use chat for now.
 
 ## Auto-maintenance
 
 - Nightly: `vercel-templates-index-nightly` re-indexes the catalog at 04:00
 - Weekly: `vercel-templates-owner-checkin` reviews issues, updates this file, and reports to Kenny
+- Daily: `vercel-templates-daily-update` (currently delivers to origin chat)
 
 ## Notes for next session
 
-- Issue #1 (README extraction) is implemented and verified. Ready to merge after review gate.
-- Next priority: Issue #4 (MCP server) or Issue #7 (WSL/TypeScript port).
-- Lint/type-check tooling is blocked on MSYS native deps (ruff/mypy fail to build). Consider running CI on GitHub Actions or porting to WSL/TypeScript.
+- Issue #4 (MCP server) is implemented and in review. Next priority: Issue #7 (WSL/TypeScript port).

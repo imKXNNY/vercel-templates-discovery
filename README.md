@@ -62,7 +62,34 @@ vercel-templates search "AI chatbot" --json
 vercel-templates show /templates/next.js/chatbot --json
 ```
 
-Future plans include an MCP server and a Hermes skill so agents can query the catalog without shelling out.
+### MCP server
+
+An MCP (Model Context Protocol) server is included for direct agent integration:
+
+```bash
+# Start the MCP server
+python -m vercel_templates.mcp_server
+# or
+vercel-templates-mcp
+```
+
+Available tools:
+- `search_templates(query, limit)` — search the catalog
+- `get_template(slug)` — get full details for a template
+- `list_categories()` — list available categories/frameworks
+
+Example MCP client config (Claude Desktop / Cursor):
+
+```json
+{
+  "mcpServers": {
+    "vercel-templates": {
+      "command": "python",
+      "args": ["-m", "vercel_templates.mcp_server"]
+    }
+  }
+}
+```
 
 ## Project status
 
