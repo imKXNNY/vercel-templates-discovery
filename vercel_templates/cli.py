@@ -15,7 +15,7 @@ console = Console()
 def index(
     concurrency: int = typer.Option(8, "--concurrency", "-c", help="Max parallel detail fetches"),
     delay: float = typer.Option(0.5, "--delay", "-d", help="Seconds between category requests"),
-):
+) -> None:
     """Crawl and index the Vercel Templates catalog."""
     scraper = VercelTemplateScraper(delay=delay, max_workers=concurrency)
     with console.status("[bold green]Discovering templates..."):
@@ -28,7 +28,7 @@ def search(
     query: str = typer.Argument(..., help="Search query"),
     limit: int = typer.Option(10, "--limit", "-n", help="Max results"),
     json_output: bool = typer.Option(False, "--json", help="Output raw JSON"),
-):
+) -> None:
     """Search the indexed templates."""
     scraper = VercelTemplateScraper()
     results = scraper.search(query, limit=limit)
@@ -63,7 +63,7 @@ def search(
 def show(
     slug: str = typer.Argument(..., help="Template slug, e.g. /templates/next.js/chatbot"),
     json_output: bool = typer.Option(False, "--json", help="Output raw JSON"),
-):
+) -> None:
     """Show full details for a template."""
     scraper = VercelTemplateScraper()
     t = scraper.get(slug)
@@ -96,7 +96,7 @@ def show(
 def export(
     output: str = typer.Option("templates.json", "--output", "-o", help="JSON output path"),
     limit: int | None = typer.Option(None, "--limit", "-n", help="Limit number of templates"),
-):
+) -> None:
     """Export the indexed templates to JSON."""
     scraper = VercelTemplateScraper()
     templates = scraper.all_templates(limit=limit)
@@ -106,7 +106,7 @@ def export(
 
 
 @app.command()
-def stats():
+def stats() -> None:
     """Show index statistics."""
     scraper = VercelTemplateScraper()
     templates = scraper.all_templates()

@@ -5,7 +5,7 @@ import re
 import sqlite3
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any, cast
+from typing import Any
 
 import requests
 from bs4 import BeautifulSoup
@@ -455,13 +455,13 @@ def _extract_install_command(readme_text: str, scripts: str) -> str | None:
         for line in block.splitlines():
             line = line.strip()
             if line.startswith(scaffold_patterns):
-                return line
+                return str(line)
     # Fallback: any npm/yarn/pnpm/bun/npx command in a code block
     for block in re.findall(r"```(?:bash|sh|shell)?\n?(.*?)```", readme_text, re.DOTALL):
         for line in block.splitlines():
             line = line.strip()
             if line.startswith(("npx ", "npm ", "yarn ", "pnpm ", "bun ", "bunx ")):
-                return line
+                return str(line)
     # Fallback: search the entire scripts payload for escaped or unescaped commands
     for pattern in [
         r'(?:\\")?npx\s+create-[-\w]+(?:\s+[-\w./=]+)*(?:\\")?',
@@ -470,5 +470,5 @@ def _extract_install_command(readme_text: str, scripts: str) -> str | None:
     ]:
         match = re.search(pattern, scripts)
         if match:
-            return cast("str", _unescape(match.group(0).strip().strip('"')))
+            return str(_unescape(match.group(0).strip().strip('"')))
     return None
