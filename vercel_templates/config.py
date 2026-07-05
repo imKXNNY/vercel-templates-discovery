@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Optional
 
+BASE_URL = "https://vercel.com"
+
 DEFAULT_CATEGORIES = [
     "ai",
     "authentication",
