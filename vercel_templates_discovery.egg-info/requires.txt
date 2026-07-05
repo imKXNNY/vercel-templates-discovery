@@ -1,6 +1,0 @@
-requests>=2.32
-beautifulsoup4>=4.12
-typer>=0.12
-rich>=13.0
-sqlite-utils>=3.36
-python-dotenv>=1.0
