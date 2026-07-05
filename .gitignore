@@ -45,6 +45,13 @@ Thumbs.db
 templates.json
 .venv/
 
+# Node.js
+node_modules/
+dist/
+
+# TypeScript
+*.tsbuildinfo
+
 # Hermes / local cache
 .vercel_templates/
 

@@ -8,7 +8,7 @@
 
 Build the standard agentic discovery layer for Vercel Templates — a searchable, always-up-to-date catalog that AI agents and developers can query to find the best starting point for any project.
 
-## Current state (v0.2.0 in progress)
+## Current state (v0.2.0)
 
 - Working CLI indexes the full Vercel Templates gallery (~284 templates)
 - SQLite cache with FTS5 keyword search
@@ -18,6 +18,12 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
   - 100% have an install command
   - Next.js RSC flight deferred chunks are parsed and JSON-unescaped
 - **MCP server implemented (Issue #4):** exposes `search_templates`, `get_template`, `list_categories` via stdio JSON-RPC
+- **TypeScript / WSL port implemented (Issue #7):**
+  - Complete Node.js/TypeScript implementation under `ts/`
+  - Feature parity with Python CLI: index, search, show, stats
+  - MCP server with spec-compliant stdio JSON-RPC framing
+  - Tests pass in WSL; `typecheck:all` covers src + tests + scripts
+  - Open PR: https://github.com/imKXNNY/vercel-templates-discovery/pull/new/feature/7-typescript-port
 - JSON output for agent consumption
 - CI, tests, README, CONTRIBUTING guide
 - ADOS framework adopted at repo layer
@@ -25,7 +31,7 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
 
 ## Priority backlog (next-best actions)
 
-1. **WSL / TypeScript port** (#7) — solves Windows dependency pain, enables better distribution
+1. **Merge TypeScript port PR** (#7) — pending Kenny review / auto-merge
 2. **Semantic search** (#11) — intent-based discovery
 3. **PyPI / npm publish** (#8, #9) — frictionless adoption
 4. **ToS review** (#13) — gating public release
@@ -34,6 +40,7 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
 
 - Stay private until M6 / ToS review complete.
 - Use pure Python (requests + BeautifulSoup) for now; Crawl4AI failed on MSYS native deps.
+- TypeScript port targets WSL/Unix environments; Windows-native `better-sqlite3` builds are not supported on this host.
 - Nightly re-index cron keeps the local cache fresh.
 - ADOS layer precedence: repo > ADOS_HOME > package fallback. Repo layer is active.
 - Discord delivery is now configured via home channel (#jarvis) on native Windows Hermes.
@@ -46,5 +53,6 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
 
 ## Notes for next session
 
-- Issue #1 and #4 are merged. Next priority: Issue #7 (WSL/TypeScript port).
-- Lint/type-check tooling is blocked on MSYS native deps (ruff/mypy fail to build). Consider running CI on GitHub Actions or porting to WSL/TypeScript.
+- Issue #7 is implemented and pushed as `feature/7-typescript-port`. Review/merge is the next step.
+- Remaining open backlog: 13 issues. Top candidates: semantic search (#11), PyPI/npm packaging (#8, #9), or ToS review (#13).
+- The other open PR and 3 active branches should be reconciled before merging #7 to avoid conflicts.

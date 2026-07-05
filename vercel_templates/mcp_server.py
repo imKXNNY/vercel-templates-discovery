@@ -1,6 +1,6 @@
 import json
 import sys
-from typing import Any, Optional
+from typing import Any, cast
 
 from .scraper import VercelTemplateScraper
 
@@ -18,7 +18,7 @@ class MCPServer:
                 break
             self._handle(message)
 
-    def _read_message(self) -> Optional[dict[str, Any]]:
+    def _read_message(self) -> dict[str, Any] | None:
         headers: dict[str, str] = {}
         while True:
             line = sys.stdin.readline()
@@ -37,7 +37,7 @@ class MCPServer:
         if len(data) < length:
             return None
         try:
-            return json.loads(data)
+            return cast(dict[str, Any], json.loads(data))
         except json.JSONDecodeError:
             self._send_error(None, -32700, "Parse error")
             return None
@@ -83,7 +83,10 @@ class MCPServer:
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "slug": {"type": "string", "description": "Template slug, e.g. /templates/next.js/chatbot"}
+                        "slug": {
+                            "type": "string",
+                            "description": "Template slug, e.g. /templates/next.js/chatbot",
+                        }
                     },
                     "required": ["slug"],
                 },
@@ -143,7 +146,7 @@ class MCPServer:
     def _send(self, message: dict[str, Any]) -> None:
         data = json.dumps(message, ensure_ascii=False)
         encoded = data.encode("utf-8")
-        sys.stdout.buffer.write(f"Content-Length: {len(encoded)}\n\n".encode("utf-8"))
+        sys.stdout.buffer.write(f"Content-Length: {len(encoded)}\n\n".encode())
         sys.stdout.buffer.write(encoded)
         sys.stdout.buffer.flush()
 

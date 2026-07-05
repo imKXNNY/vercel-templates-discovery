@@ -1,0 +1,36 @@
+{
+  "name": "@kxnnymusic/vercel-templates-discovery",
+  "version": "0.2.0",
+  "description": "Agentic discovery for Vercel Templates",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "vercel-templates": "dist/cli.js",
+    "vercel-templates-mcp": "dist/mcp-server.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "typecheck:all": "tsc -p tsconfig.test.json --noEmit"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "cheerio": "^1.0.0-rc.12",
+    "commander": "^12.0.0",
+    "domhandler": "^5.0.3",
+    "he": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.10",
+    "@types/he": "^1.2.3",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

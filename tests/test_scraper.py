@@ -1,7 +1,7 @@
 import pytest
+
 from vercel_templates.scraper import (
     VercelTemplateScraper,
-    _extract_flight_chunk,
     _extract_install_command,
     _extract_readme_text,
 )
@@ -13,7 +13,7 @@ def scraper(tmp_path):
 
 
 def test_extract_github_url(scraper):
-    text = '\"githubUrl\":\"https://github.com/vercel/vercel/tree/main/examples/nextjs\"'
+    text = '"githubUrl":"https://github.com/vercel/vercel/tree/main/examples/nextjs"'
     assert (
         scraper._extract_github_url(text)
         == "https://github.com/vercel/vercel/tree/main/examples/nextjs"
@@ -27,7 +27,9 @@ npm install
 npx create-next-app --example blog-starter my-app
 ```
 """
-    assert _extract_install_command(readme, "") == "npx create-next-app --example blog-starter my-app"
+    assert (
+        _extract_install_command(readme, "") == "npx create-next-app --example blog-starter my-app"
+    )
 
 
 def test_extract_install_command_falls_back_to_generic(scraper):
@@ -54,7 +56,10 @@ def test_select_install_command_prefers_scaffold(scraper):
         "github_url": "https://github.com/vercel/vercel/tree/main/examples/nextjs",
         "frameworks": "next.js",
     }
-    assert scraper._select_install_command(t, "npm run dev") == "npx create-next-app --example nextjs my-app"
+    assert (
+        scraper._select_install_command(t, "npm run dev")
+        == "npx create-next-app --example nextjs my-app"
+    )
 
 
 def test_select_install_command_keeps_extracted_scaffold(scraper):
@@ -63,4 +68,7 @@ def test_select_install_command_keeps_extracted_scaffold(scraper):
         "github_url": "https://github.com/vercel/chatbot",
         "frameworks": "ai",
     }
-    assert scraper._select_install_command(t, "git clone https://github.com/vercel/chatbot") == "git clone https://github.com/vercel/chatbot"
+    assert (
+        scraper._select_install_command(t, "git clone https://github.com/vercel/chatbot")
+        == "git clone https://github.com/vercel/chatbot"
+    )

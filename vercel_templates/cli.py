@@ -1,6 +1,4 @@
 import json
-from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console
@@ -17,7 +15,7 @@ console = Console()
 def index(
     concurrency: int = typer.Option(8, "--concurrency", "-c", help="Max parallel detail fetches"),
     delay: float = typer.Option(0.5, "--delay", "-d", help="Seconds between category requests"),
-):
+) -> None:
     """Crawl and index the Vercel Templates catalog."""
     scraper = VercelTemplateScraper(delay=delay, max_workers=concurrency)
     with console.status("[bold green]Discovering templates..."):
@@ -30,7 +28,7 @@ def search(
     query: str = typer.Argument(..., help="Search query"),
     limit: int = typer.Option(10, "--limit", "-n", help="Max results"),
     json_output: bool = typer.Option(False, "--json", help="Output raw JSON"),
-):
+) -> None:
     """Search the indexed templates."""
     scraper = VercelTemplateScraper()
     results = scraper.search(query, limit=limit)
@@ -49,11 +47,14 @@ def search(
     table.add_column("Description", style="white")
 
     for r in results:
+        desc = r.get("description", "")
+        snippet = desc[:120]
+        ellipsis = "..." if len(desc) > 120 else ""
         table.add_row(
             r.get("title", ""),
             r.get("frameworks", ""),
             r.get("use_cases", ""),
-            r.get("description", "")[:120] + "...",
+            f"{snippet}{ellipsis}",
         )
     console.print(table)
 
@@ -62,7 +63,7 @@ def search(
 def show(
     slug: str = typer.Argument(..., help="Template slug, e.g. /templates/next.js/chatbot"),
     json_output: bool = typer.Option(False, "--json", help="Output raw JSON"),
-):
+) -> None:
     """Show full details for a template."""
     scraper = VercelTemplateScraper()
     t = scraper.get(slug)
@@ -76,14 +77,14 @@ def show(
 
     title = t.get("title", slug)
     body = f"""
-[b]Description:[/b] {t.get('description', '')}
-[b]Frameworks:[/b] {t.get('frameworks', '')}
-[b]Use Cases:[/b] {t.get('use_cases', '')}
-[b]Owner:[/b] {t.get('owner', '')}
-[b]Repository:[/b] {t.get('repository', '')}
-[b]GitHub URL:[/b] {t.get('github_url', '')}
-[b]Install:[/b] {t.get('install_command', '')}
-[b]Detail:[/b] {t.get('detail_url', '')}
+[b]Description:[/b] {t.get("description", "")}
+[b]Frameworks:[/b] {t.get("frameworks", "")}
+[b]Use Cases:[/b] {t.get("use_cases", "")}
+[b]Owner:[/b] {t.get("owner", "")}
+[b]Repository:[/b] {t.get("repository", "")}
+[b]GitHub URL:[/b] {t.get("github_url", "")}
+[b]Install:[/b] {t.get("install_command", "")}
+[b]Detail:[/b] {t.get("detail_url", "")}
 """.strip()
     console.print(Panel(body, title=title, expand=False))
     if t.get("readme_text"):
@@ -93,9 +94,9 @@ def show(
 
 @app.command()
 def export(
-    output: Path = typer.Option(Path("templates.json"), "--output", "-o", help="JSON output path"),
-    limit: Optional[int] = typer.Option(None, "--limit", "-n", help="Limit number of templates"),
-):
+    output: str = typer.Option("templates.json", "--output", "-o", help="JSON output path"),
+    limit: int | None = typer.Option(None, "--limit", "-n", help="Limit number of templates"),
+) -> None:
     """Export the indexed templates to JSON."""
     scraper = VercelTemplateScraper()
     templates = scraper.all_templates(limit=limit)
@@ -105,7 +106,7 @@ def export(
 
 
 @app.command()
-def stats():
+def stats() -> None:
     """Show index statistics."""
     scraper = VercelTemplateScraper()
     templates = scraper.all_templates()

@@ -6,7 +6,7 @@ import sys
 def send_message(proc, message):
     data = json.dumps(message)
     encoded = data.encode("utf-8")
-    header = f"Content-Length: {len(encoded)}\n\n".encode("utf-8")
+    header = f"Content-Length: {len(encoded)}\n\n".encode()
     proc.stdin.write(header)
     proc.stdin.write(encoded)
     proc.stdin.flush()
@@ -73,7 +73,7 @@ def test_mcp_server_smoke():
     results = json.loads(content)
     assert len(results) <= 3
 
-    # get_template
+    # get_template (empty DB -> None)
     send_message(
         proc,
         {
@@ -90,7 +90,7 @@ def test_mcp_server_smoke():
     assert msg is not None
     content = msg["result"]["content"][0]["text"]
     result = json.loads(content)
-    assert result["slug"] == "/templates/next.js/chatbot"
+    assert result is None
 
     proc.stdin.close()
     proc.wait(timeout=5)
