@@ -22,6 +22,9 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
 - **M2 deliverables implemented (Issues #2, #3):**
   - Mocked HTTP smoke tests with `responses` + HTML fixtures
   - `CHANGELOG.md` following Keep a Changelog format
+- **M3 deliverables implemented (Issues #5, #6):**
+  - Hermes skill wrapper at `skills/vercel-templates/`
+  - REST API server (`vercel-templates serve`) with FastAPI/uvicorn endpoints
 - JSON output for agent consumption
 - CI, tests, README, CONTRIBUTING guide, CHANGELOG
 - ADOS framework adopted at repo layer

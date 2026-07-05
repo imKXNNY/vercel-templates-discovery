@@ -141,6 +141,18 @@ Example MCP client config (Claude Desktop / Cursor):
 }
 ```
 
+### Hermes skill
+
+A Hermes skill wrapper is provided under `skills/vercel-templates/`. Copy or symlink the skill into your Hermes profile's `skills/` directory:
+
+```bash
+# Windows native Hermes example
+copy /Y skills\vercel-templates %LOCALAPPDATA%\hermes\skills\vercel-templates
+# or Hermes profile path: ~/.hermes/profiles/default/skills/vercel-templates
+```
+
+The skill exposes the same three tools as the MCP server and can be used directly by Hermes agents.
+
 ## Project status
 
 See [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) for the roadmap, milestones, and backlog.
