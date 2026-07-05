@@ -13,10 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HTML fixtures for stable category-page and detail-page parsing tests.
 - REST API server (`vercel-templates serve`) with FastAPI/uvicorn.
 - `GET /health`, `/templates`, `/templates/{slug}`, and `/categories` endpoints.
-- Hermes skill wrapper at `skills/vercel-templates/SKILL.md`.
+- Hermes skill wrapper at `skills/vercel-templates/`.
 - This `CHANGELOG.md`.
 - Added `responses` and `httpx` to dev extras for HTTP mocking in tests.
 - Added `fastapi` and `uvicorn` under `server` optional dependencies.
+- Published to PyPI and npm (M4).
 
 ## [0.2.0] - 2026-07-05
 
