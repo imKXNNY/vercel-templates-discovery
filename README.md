@@ -2,7 +2,7 @@
 
 > Agentic CLI for discovering, indexing, and searching [Vercel Templates](https://vercel.com/templates). No public API exists — this tool fills the gap for agents and developers who want a searchable, local catalog with install commands.
 
-## Quick start
+## Quick start (Python)
 
 ```bash
 # 1. Install
@@ -22,6 +22,25 @@ vercel-templates show /templates/next.js/chatbot
 vercel-templates export --output templates.json
 ```
 
+## Quick start (TypeScript / WSL)
+
+```bash
+cd ts
+npm install
+
+# Build once, or run via tsx
+npm run build
+npm run typecheck:all
+npm test
+
+# Index the catalog
+npx tsx src/cli.ts index
+
+# Search / show
+npx tsx src/cli.ts search "AI chatbot" --json
+npx tsx src/cli.ts show /templates/next.js/chatbot --json
+```
+
 ## Why this exists
 
 Vercel maintains a curated library of high-quality templates, but provides no SDK, CLI, or API for discovering them. This tool:
@@ -34,13 +53,24 @@ Vercel maintains a curated library of high-quality templates, but provides no SD
 ## Architecture
 
 ```text
-vercel_templates/
-├── config.py      # categories, cache path, constants
-├── scraper.py     # crawler + detail extractor + SQLite cache
-└── cli.py         # Typer CLI
+vercel_templates/          # Python implementation
+├── config.py              # categories, cache path, constants
+├── scraper.py             # crawler + detail extractor + SQLite cache
+└── cli.py                 # Typer CLI
+
+ts/                        # TypeScript / Node implementation
+├── src/
+│   ├── scraper.ts         # crawler + detail extractor
+│   ├── db.ts              # SQLite cache + FTS5 search
+│   ├── cli.ts             # Commander CLI
+│   ├── mcp-server.ts      # stdio JSON-RPC MCP server
+│   └── index.ts           # library exports
+├── tests/
+│   └── scraper.test.ts    # vitest tests
+└── package.json
 ```
 
-The scraper uses `requests` + `BeautifulSoup` + regex to parse Vercel's server-rendered pages and Next.js flight payloads. Because the catalog is small, the entire index can be rebuilt in ~60 seconds.
+The scraper uses `fetch` + `cheerio` + regex to parse Vercel's server-rendered pages and Next.js flight payloads. Because the catalog is small, the entire index can be rebuilt in under a minute.
 
 ## Commands
 

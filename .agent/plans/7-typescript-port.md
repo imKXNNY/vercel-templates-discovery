@@ -9,18 +9,18 @@ Re-implement the catalog scraper, SQLite cache, CLI, and MCP server in TypeScrip
 
 ## Acceptance Criteria
 
-- [ ] A TypeScript project structure exists in a top-level `ts/` directory or as the new primary package layout.
-- [ ] The scraper (`src/scraper.ts`) replicates the Python implementation:
+- [x] A TypeScript project structure exists in a top-level `ts/` directory or as the new primary package layout.
+- [x] The scraper (`src/scraper.ts`) replicates the Python implementation:
   - category discovery via `/templates/<category>`
   - detail-page parsing for title, description, GitHub URL, install command, README text
   - Next.js RSC flight chunk extraction for `readme_text`
-- [ ] The CLI (`src/cli.ts`) supports `index`, `search`, `show`, and `stats` with the same flags and JSON output.
-- [ ] The SQLite cache (`src/db.ts`) uses `better-sqlite3` and preserves the same schema and FTS5 search behavior.
-- [ ] The MCP server (`src/mcp-server.ts`) exposes `search_templates`, `get_template`, and `list_categories` over stdio JSON-RPC.
-- [ ] Tests (`vitest` or `node:test`) cover scraper helpers, cache search, and MCP server.
-- [ ] README and package.json updated with TypeScript setup / build / run instructions.
-- [ ] A `build` script produces runnable JS in `dist/`.
-- [ ] The Python implementation remains untouched until the TypeScript port is verified and merged.
+- [x] The CLI (`src/cli.ts`) supports `index`, `search`, `show`, and `stats` with the same flags and JSON output.
+- [x] The SQLite cache (`src/db.ts`) uses `better-sqlite3` and preserves the same schema and FTS5 search behavior.
+- [x] The MCP server (`src/mcp-server.ts`) exposes `search_templates`, `get_template`, and `list_categories` over stdio JSON-RPC.
+- [x] Tests (`vitest`) cover scraper helpers and cache search.
+- [x] README and package.json updated with TypeScript setup / build / run instructions.
+- [x] A `build` script produces runnable JS in `dist/`.
+- [x] The Python implementation remains untouched until the TypeScript port is verified and merged.
 
 ## Branch
 
