@@ -13,7 +13,10 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
 - Working CLI indexes the full Vercel Templates gallery (~284 templates)
 - SQLite cache with FTS5 keyword search
 - Extracts title, description, GitHub URL, owner, repo, install command
-- **README extraction implemented (Issue #1):** 82.4% of templates have README text
+- **README extraction implemented (Issue #1):**
+  - 234/284 templates (82.4%) have non-empty `readme_text`
+  - 100% have an install command
+  - Next.js RSC flight deferred chunks are parsed and JSON-unescaped
 - **MCP server implemented (Issue #4):** exposes `search_templates`, `get_template`, `list_categories` via stdio JSON-RPC
 - JSON output for agent consumption
 - CI, tests, README, CONTRIBUTING guide
@@ -33,14 +36,15 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
 - Use pure Python (requests + BeautifulSoup) for now; Crawl4AI failed on MSYS native deps.
 - Nightly re-index cron keeps the local cache fresh.
 - ADOS layer precedence: repo > ADOS_HOME > package fallback. Repo layer is active.
-- Discord delivery not configured on native Windows Hermes; use chat for now.
+- Discord delivery is now configured via home channel (#jarvis) on native Windows Hermes.
 
 ## Auto-maintenance
 
 - Nightly: `vercel-templates-index-nightly` re-indexes the catalog at 04:00
 - Weekly: `vercel-templates-owner-checkin` reviews issues, updates this file, and reports to Kenny
-- Daily: `vercel-templates-daily-update` (currently delivers to origin chat)
+- Daily: `vercel-templates-daily-update` delivers to Discord home channel (#jarvis)
 
 ## Notes for next session
 
-- Issue #4 (MCP server) is implemented and in review. Next priority: Issue #7 (WSL/TypeScript port).
+- Issue #1 and #4 are merged. Next priority: Issue #7 (WSL/TypeScript port).
+- Lint/type-check tooling is blocked on MSYS native deps (ruff/mypy fail to build). Consider running CI on GitHub Actions or porting to WSL/TypeScript.
