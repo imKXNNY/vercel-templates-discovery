@@ -1,46 +1,72 @@
 # Vercel Templates Discovery
 
-An agentic CLI for discovering, indexing, and searching Vercel Templates.
+> Agentic CLI for discovering, indexing, and searching [Vercel Templates](https://vercel.com/templates). No public API exists — this tool fills the gap for agents and developers who want a searchable, local catalog with install commands.
 
-## Why
-
-Vercel's curated template gallery (https://vercel.com/templates) has no public API or CLI for discovery. This tool crawls the gallery, indexes ~267 templates, and exposes a searchable local cache with metadata including GitHub URLs and install commands.
-
-## Install
+## Quick start
 
 ```bash
-cd /c/Users/kenny/Projects/vercel-templates-discovery
-source .venv/bin/activate
-pip install -e .
-```
+# 1. Install
+pip install -e ".[dev]"
 
-## Usage
-
-```bash
-# Index the catalog (crawls category pages + detail pages)
+# 2. Index the catalog
 vercel-templates index
 
-# Search the index
+# 3. Search
 vercel-templates search "AI chatbot"
-vercel-templates search "Next.js ecommerce" --limit 5
+vercel-templates search "ecommerce" --limit 3
 
-# Show details for a specific template
+# 4. Show details
 vercel-templates show /templates/next.js/chatbot
 
-# Export the index to JSON
+# 5. Export to JSON
 vercel-templates export --output templates.json
 ```
 
-## How it works
+## Why this exists
 
-- **Category crawl**: visits each Vercel template category page and extracts template slugs, titles, and descriptions from the SSR'd HTML.
-- **Detail crawl**: visits each template's detail page and extracts GitHub URL, use-case/framework tags, README, and install commands.
-- **SQLite cache**: stores everything in `~/.vercel_templates/templates.db`.
-- **Search**: keyword search over title, description, tags, and README; optionally ranks by relevance.
+Vercel maintains a curated library of high-quality templates, but provides no SDK, CLI, or API for discovering them. This tool:
 
-## Data freshness
+- Crawls the Vercel Templates gallery (~277 templates).
+- Extracts metadata, GitHub URLs, and install commands.
+- Stores everything in a local SQLite cache with full-text search.
+- Exposes a simple CLI that agents can call or shell out to.
 
-The catalog is small (~267 templates). Running `index` refreshes the entire cache. By default it respects Vercel's servers with modest concurrency and retries.
+## Architecture
+
+```text
+vercel_templates/
+├── config.py      # categories, cache path, constants
+├── scraper.py     # crawler + detail extractor + SQLite cache
+└── cli.py         # Typer CLI
+```
+
+The scraper uses `requests` + `BeautifulSoup` + regex to parse Vercel's server-rendered pages and Next.js flight payloads. Because the catalog is small, the entire index can be rebuilt in ~60 seconds.
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `index` | Crawl and index the full catalog |
+| `search QUERY` | Full-text search over titles, descriptions, tags |
+| `show SLUG` | Show full details for a template |
+| `export` | Dump the indexed catalog to JSON |
+| `stats` | Show framework/category counts |
+
+## Agentic usage
+
+The CLI is designed to be easy for agents to consume:
+
+```bash
+# JSON output for downstream parsing
+vercel-templates search "AI chatbot" --json
+vercel-templates show /templates/next.js/chatbot --json
+```
+
+Future plans include an MCP server and a Hermes skill so agents can query the catalog without shelling out.
+
+## Project status
+
+See [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) for the roadmap, milestones, and backlog.
 
 ## License
 
