@@ -8,7 +8,7 @@
 
 Build the standard agentic discovery layer for Vercel Templates — a searchable, always-up-to-date catalog that AI agents and developers can query to find the best starting point for any project.
 
-## Current state (v0.2.2)
+## Current state (v0.2.3)
 
 - Working CLI indexes the full Vercel Templates gallery (~284 templates)
 - SQLite cache with FTS5 keyword search
@@ -26,9 +26,9 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
   - Hermes skill wrapper at `skills/vercel-templates/`
   - REST API server (`vercel-templates serve`) with FastAPI/uvicorn endpoints
 - **M4 deliverables implemented (Issues #8, #9, #10):**
-  - PyPI: `pip install vercel-templates-discovery` (v0.2.2)
-  - npm: `npm install -g @imkxnny/vercel-templates-discovery` (v0.2.2)
-  - Docker: `docker run --rm ghcr.io/imkxnnny/vercel-templates-discovery:0.2.2 vercel-templates --help`
+  - PyPI: `pip install vercel-templates-discovery` (v0.2.3)
+  - npm: `npm install -g @imkxnny/vercel-templates-discovery` (v0.2.3)
+  - Docker: `docker run --rm ghcr.io/imkxnnny/vercel-templates-discovery:0.2.3 vercel-templates --help`
 - CI, tests, README, CONTRIBUTING guide, CHANGELOG
 - ADOS framework adopted at repo layer
 - 5 milestones and 14 roadmap issues created

@@ -20,6 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Published to PyPI and npm (M4).
 - Docker image with Python + TypeScript CLI (`Dockerfile`, `.dockerignore`, `publish-docker.yml`).
 
+## [0.2.3] - 2026-07-06
+
+### Fixed
+
+- TypeScript build stage in Dockerfile now correctly copies `tsconfig.json` and `src/` before running `tsc`, enabling GHCR image builds.
+- Added `declarationMap`, `sourceMap`, and `types: ["node"]` to `ts/tsconfig.json` for cleaner published TypeScript artifacts.
+
 ## [0.2.2] - 2026-07-06
 
 ### Added
