@@ -5,10 +5,14 @@ FROM node:20-slim AS ts-build
 
 WORKDIR /build
 
-COPY ts/package.json ts/package-lock.json ./
+# Copy package manifests, lockfile, and tsconfig into build root
+COPY ts/package.json ts/package-lock.json ts/tsconfig.json ./
+
+# Install all deps (including dev deps for tsc)
 RUN npm ci
 
-COPY ts ./ts
+# Copy TypeScript source and build
+COPY ts/src ./src
 RUN npm run build
 
 # Strip dev-only dependencies so only production deps remain
@@ -17,8 +21,8 @@ RUN npm prune --production
 # ---------- Stage 2: Python + runtime ----------
 FROM python:3.12-slim
 
-# Create a non-root user for defense-in-depth
-RUN groupadd -r app && useradd -r -g app app
+# Create a non-root user with a writable home directory for the cache
+RUN groupadd -r app && useradd -r -m -g app app
 
 WORKDIR /app
 
@@ -39,8 +43,8 @@ RUN pip install --no-cache-dir ".[server]" \
     && pip cache purge
 
 # Copy compiled TypeScript artifacts and production node_modules from build stage
-COPY --chown=app:app --from=ts-build /build/ts/dist ./ts/dist
-COPY --chown=app:app --from=ts-build /build/ts/package.json ./ts/package.json
+COPY --chown=app:app --from=ts-build /build/dist ./ts/dist
+COPY --chown=app:app --from=ts-build /build/package.json ./ts/package.json
 COPY --chown=app:app --from=ts-build /build/node_modules ./ts/node_modules
 
 # Verify both entry points are present and executable
