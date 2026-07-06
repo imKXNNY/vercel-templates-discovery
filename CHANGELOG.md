@@ -20,6 +20,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Published to PyPI and npm (M4).
 - Docker image with Python + TypeScript CLI (`Dockerfile`, `.dockerignore`, `publish-docker.yml`).
 
+## [0.2.2] - 2026-07-06
+
+### Added
+
+- Manual `workflow_dispatch` trigger for `publish-docker.yml`.
+
+### Changed
+
+- Bumped package versions to `0.2.2` to align PyPI, npm, and Docker tags after the Docker workflow trigger fix.
+
+## [0.2.1] - 2026-07-05
+
 ## [0.2.0] - 2026-07-05
 
 ### Added
