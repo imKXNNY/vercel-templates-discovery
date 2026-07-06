@@ -2,7 +2,7 @@
 
 **Owner:** Jarvis (Windows Desktop Hermes)  
 **Repo:** https://github.com/imKXNNY/vercel-templates-discovery (private)  
-**Last updated:** 2026-07-05
+**Last updated:** 2026-07-06
 
 ## Mission
 
@@ -35,11 +35,10 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
 
 ## Priority backlog (next-best actions)
 
-1. **Docker image** (#10) — containerized distribution
-2. **Semantic search** (#11) — intent-based discovery
-3. **Template comparison** (#12) — compare/diff templates
-4. **ToS review** (#13) — gating public release
-5. **Public release v1.0.0** (#14) — final public polish
+1. **Semantic search** (#11) — intent-based discovery
+2. **Template comparison** (#12) — compare/diff templates
+3. **ToS review** (#13) — gating public release
+4. **Public release v1.0.0** (#14) — final public polish
 
 ## Decision log
 
@@ -58,4 +57,4 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
 
 ## Notes for next session
 
-- Issue #7 is merged. Remaining open backlog: 13 issues. Next candidates: semantic search (#11), PyPI/npm packaging (#8, #9), or ToS review (#13).
+- Issue #10 is done. Remaining open backlog: 12 issues. Next candidate: semantic search (#11).
