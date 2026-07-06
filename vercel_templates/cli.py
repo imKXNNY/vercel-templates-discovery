@@ -15,9 +15,13 @@ console = Console()
 def index(
     concurrency: int = typer.Option(8, "--concurrency", "-c", help="Max parallel detail fetches"),
     delay: float = typer.Option(0.5, "--delay", "-d", help="Seconds between category requests"),
+    reset: bool = typer.Option(False, "--reset", help="Drop existing index before re-indexing"),
 ) -> None:
     """Crawl and index the Vercel Templates catalog."""
     scraper = VercelTemplateScraper(delay=delay, max_workers=concurrency)
+    if reset:
+        scraper.reset_db()
+        console.print("[yellow]Existing index dropped.[/yellow]")
     with console.status("[bold green]Discovering templates..."):
         count = scraper.index(concurrency=concurrency)
     console.print(f"[bold green]Indexed {count} templates[/bold green]")
@@ -58,7 +62,13 @@ def _semantic_search(query: str, limit: int, json_output: bool) -> None:
         console.print(f"[red]{exc}[/red]")
         raise typer.Exit(1) from exc
 
-    _render_results(results, query, json_output, title_template='Semantic matches for "{query}"')
+    _render_results(
+        results,
+        query,
+        json_output,
+        title_template='Semantic matches for "{query}"',
+        show_distance=True,
+    )
 
 
 def _render_results(
@@ -66,6 +76,7 @@ def _render_results(
     query: str,
     json_output: bool,
     title_template: str,
+    show_distance: bool = False,
 ) -> None:
     if not results:
         console.print("[yellow]No results found.[/yellow]")
@@ -79,18 +90,24 @@ def _render_results(
     table.add_column("Title", style="cyan", no_wrap=False)
     table.add_column("Framework", style="magenta")
     table.add_column("Use Cases", style="green")
+    if show_distance:
+        table.add_column("Distance", style="yellow", justify="right")
     table.add_column("Description", style="white")
 
     for r in results:
         desc = r.get("description", "")
         snippet = desc[:120]
         ellipsis = "..." if len(desc) > 120 else ""
-        table.add_row(
+        row = [
             r.get("title", ""),
             r.get("frameworks", ""),
             r.get("use_cases", ""),
-            f"{snippet}{ellipsis}",
-        )
+        ]
+        if show_distance:
+            distance = r.get("distance")
+            row.append(f"{distance:.4f}" if isinstance(distance, (int, float)) else "")
+        row.append(f"{snippet}{ellipsis}")
+        table.add_row(*row)
     console.print(table)
 
 

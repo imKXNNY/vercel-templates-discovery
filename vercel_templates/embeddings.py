@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import logging
 import os
 import re
 from typing import Any, Protocol
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 _OLLAMA_URL = os.getenv("VTD_OLLAMA_URL", "http://localhost:11434/api/embed")
 _MODEL_NAME = os.getenv("VTD_EMBEDDING_MODEL", "nomic-embed-text-v2-moe:latest")
@@ -44,12 +47,18 @@ class OllamaEmbeddingModel:
     def encode(self, texts: list[str]) -> np.ndarray:
         import requests
 
-        resp = requests.post(
-            self.ollama_url,
-            json={"model": self.model_name, "input": texts},
-            timeout=self.timeout,
-        )
-        resp.raise_for_status()
+        try:
+            resp = requests.post(
+                self.ollama_url,
+                json={"model": self.model_name, "input": texts},
+                timeout=self.timeout,
+            )
+            resp.raise_for_status()
+        except requests.exceptions.RequestException as exc:
+            raise RuntimeError(
+                "Ollama embedding request failed. Is Ollama running at "
+                f"{self.ollama_url}? Error: {exc}"
+            ) from exc
         data = resp.json()
         embeddings = data.get("embeddings", [])
         if not embeddings:
@@ -137,8 +146,9 @@ def get_model(fake: bool = False) -> EmbeddingModel:
         # Probe once to ensure Ollama is actually reachable.
         model.encode_single("hello")
         return model
-    except Exception:
+    except Exception as exc:
         # Optional: try sentence-transformers fallback here if importable.
+        logger.warning("Ollama not reachable (%s). Falling back to fake embeddings.", exc)
         return FakeEmbeddingModel()
 
 
