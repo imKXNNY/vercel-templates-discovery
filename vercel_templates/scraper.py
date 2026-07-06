@@ -1,4 +1,5 @@
 import codecs
+import contextlib
 import html
 import logging
 import re
@@ -7,16 +8,23 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
+import numpy as np
 import requests
 from bs4 import BeautifulSoup
 
 from .config import BASE_URL, DEFAULT_CATEGORIES, FRAMEWORK_CATEGORIES, cache_db_path, user_agent
+from .embeddings import EmbeddingModel, embedding_text
 
 logger = logging.getLogger(__name__)
 
 
 class VercelTemplateScraper:
-    def __init__(self, delay: float = 0.5, max_workers: int = 8):
+    def __init__(
+        self,
+        delay: float = 0.5,
+        max_workers: int = 8,
+        embedding_model: EmbeddingModel | None = None,
+    ):
         self.session = requests.Session()
         self.session.headers.update(
             {
@@ -28,7 +36,26 @@ class VercelTemplateScraper:
         self.delay = delay
         self.max_workers = max_workers
         self.db_path = cache_db_path()
+        self.embedding_model = embedding_model
+        self._sqlite_vec_loaded: bool | None = None
         self._init_db()
+
+    def _try_load_sqlite_vec(self, conn: sqlite3.Connection) -> bool:
+        if self._sqlite_vec_loaded is False:
+            return False
+        try:
+            import sqlite_vec
+
+            conn.enable_load_extension(True)
+            sqlite_vec.load(conn)
+            self._sqlite_vec_loaded = True
+        except Exception as exc:
+            logger.warning("sqlite-vec not available; semantic search disabled: %s", exc)
+            self._sqlite_vec_loaded = False
+        finally:
+            with contextlib.suppress(Exception):
+                conn.enable_load_extension(False)
+        return self._sqlite_vec_loaded or False
 
     def _init_db(self) -> None:
         conn = sqlite3.connect(self.db_path)
@@ -64,16 +91,25 @@ class VercelTemplateScraper:
             )
             """
         )
+        if self._try_load_sqlite_vec(conn):
+            conn.execute(
+                "CREATE VIRTUAL TABLE IF NOT EXISTS embeddings USING vec0(embedding float[768])"
+            )
         conn.commit()
         conn.close()
 
     def reset_db(self) -> None:
         """Drop and recreate tables. Used by index before a full rebuild."""
         conn = sqlite3.connect(self.db_path)
-        conn.execute("DROP TABLE IF EXISTS search")
-        conn.execute("DROP TABLE IF EXISTS templates")
-        conn.commit()
-        conn.close()
+        try:
+            if self._try_load_sqlite_vec(conn):
+                conn.execute("DROP TABLE IF EXISTS embeddings")
+        finally:
+            conn.execute("DROP TABLE IF EXISTS search")
+            conn.execute("DROP TABLE IF EXISTS templates")
+            conn.commit()
+            conn.close()
+        self._sqlite_vec_loaded = None
         self._init_db()
 
     def _get(self, url: str, retries: int = 3) -> requests.Response:
@@ -207,6 +243,9 @@ class VercelTemplateScraper:
         conn = sqlite3.connect(self.db_path)
         conn.execute("DELETE FROM templates")
         conn.execute("DELETE FROM search")
+        if self._try_load_sqlite_vec(conn):
+            conn.execute("DELETE FROM embeddings")
+        vec_available = self._sqlite_vec_loaded or False
         for t in templates:
             cur = conn.execute(
                 """
@@ -261,6 +300,13 @@ class VercelTemplateScraper:
                     tags,
                 ),
             )
+            if vec_available and self.embedding_model is not None:
+                text = embedding_text(t)
+                vec = self.embedding_model.encode_single(text)
+                conn.execute(
+                    "INSERT OR REPLACE INTO embeddings (rowid, embedding) VALUES (?, ?)",
+                    (rowid, vec.astype(np.float32).tobytes()),
+                )
         conn.commit()
         conn.close()
 
@@ -322,6 +368,37 @@ class VercelTemplateScraper:
             LIMIT ?
             """,
             (query, limit),
+        )
+        rows = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return rows
+
+    def semantic_search(self, query: str, limit: int = 10) -> list[dict[str, Any]]:
+        if self.embedding_model is None:
+            raise RuntimeError(
+                "Semantic search requires an embedding model. "
+                "Install with: pip install 'vercel-templates-discovery[semantic]'"
+            )
+        conn = sqlite3.connect(self.db_path)
+        if not self._try_load_sqlite_vec(conn):
+            conn.close()
+            raise RuntimeError(
+                "sqlite-vec extension not available. "
+                "Install with: pip install 'vercel-templates-discovery[semantic]'"
+            )
+
+        conn.row_factory = sqlite3.Row
+        query_vec = self.embedding_model.encode_single(query)
+        cursor = conn.execute(
+            """
+            SELECT t.*, distance
+            FROM embeddings e
+            JOIN templates t ON t.id = e.rowid
+            WHERE e.embedding MATCH ?
+              AND k = ?
+            ORDER BY distance
+            """,
+            (query_vec.astype(np.float32).tobytes(), limit),
         )
         rows = [dict(row) for row in cursor.fetchall()]
         conn.close()

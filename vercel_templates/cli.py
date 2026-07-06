@@ -28,10 +28,45 @@ def search(
     query: str = typer.Argument(..., help="Search query"),
     limit: int = typer.Option(10, "--limit", "-n", help="Max results"),
     json_output: bool = typer.Option(False, "--json", help="Output raw JSON"),
+    semantic: bool = typer.Option(False, "--semantic", help="Use semantic search"),
 ) -> None:
     """Search the indexed templates."""
+    if semantic:
+        _semantic_search(query, limit=limit, json_output=json_output)
+        return
     scraper = VercelTemplateScraper()
     results = scraper.search(query, limit=limit)
+    _render_results(
+        results, query, json_output, title_template='Vercel Templates matching "{query}"'
+    )
+
+
+def _semantic_search(query: str, limit: int, json_output: bool) -> None:
+    try:
+        from .embeddings import get_model
+    except ImportError as exc:
+        console.print(
+            "[red]Semantic search requires the semantic extra. "
+            "Install with: pip install 'vercel-templates-discovery[semantic]'[/red]"
+        )
+        raise typer.Exit(1) from exc
+
+    scraper = VercelTemplateScraper(embedding_model=get_model())
+    try:
+        results = scraper.semantic_search(query, limit=limit)
+    except RuntimeError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(1) from exc
+
+    _render_results(results, query, json_output, title_template='Semantic matches for "{query}"')
+
+
+def _render_results(
+    results: list[dict[str, object]],
+    query: str,
+    json_output: bool,
+    title_template: str,
+) -> None:
     if not results:
         console.print("[yellow]No results found.[/yellow]")
         raise typer.Exit(0)
@@ -40,7 +75,7 @@ def search(
         console.print(json.dumps(results, indent=2, ensure_ascii=False))
         return
 
-    table = Table(title=f'Vercel Templates matching "{query}"')
+    table = Table(title=title_template.format(query=query))
     table.add_column("Title", style="cyan", no_wrap=False)
     table.add_column("Framework", style="magenta")
     table.add_column("Use Cases", style="green")
@@ -57,6 +92,16 @@ def search(
             f"{snippet}{ellipsis}",
         )
     console.print(table)
+
+
+@app.command()
+def semantic(
+    query: str = typer.Argument(..., help="Semantic search query"),
+    limit: int = typer.Option(10, "--limit", "-n", help="Max results"),
+    json_output: bool = typer.Option(False, "--json", help="Output raw JSON"),
+) -> None:
+    """Search indexed templates by semantic similarity."""
+    _semantic_search(query, limit=limit, json_output=json_output)
 
 
 @app.command()

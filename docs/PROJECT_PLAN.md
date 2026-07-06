@@ -51,9 +51,15 @@ Become the standard agentic discovery layer for Vercel Templates — a searchabl
 - [ ] Nightly GitHub Actions re-index that commits the JSON catalog
 
 ### M5 — Advanced discovery
-*Goal: search beyond keywords.*
+M5 roadmap has begun:
 
-- [ ] Semantic search with embeddings
+- [x] Semantic search with embeddings (Python)
+  - [x] `sqlite-vec` + `numpy` under `semantic` extra
+  - [x] Ollama-based embedding model (`nomic-embed-text:latest`)
+  - [x] Vector table populated at index time
+  - [x] CLI `semantic` command and `search --semantic` flag
+  - [x] REST `GET /templates/semantic`
+  - [x] MCP `search_templates_semantic` tool
 - [ ] Template recommendation by stack / features
 - [ ] Diff / compare templates
 - [ ] Trending / newly added templates

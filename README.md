@@ -20,11 +20,16 @@ vercel-templates index
 # 3. Search
 vercel-templates search "AI chatbot"
 vercel-templates search "ecommerce" --limit 3
+vercel-templates search "AI chatbot" --semantic  # semantic search by intent
 
-# 4. Show details
+# 4. Semantic search
+vercel-templates semantic "AI chatbot"
+vercel-templates semantic "ecommerce" --limit 3
+
+# 5. Show details
 vercel-templates show /templates/next.js/chatbot
 
-# 5. Export to JSON
+# 6. Export to JSON
 vercel-templates export --output templates.json
 ```
 
@@ -88,10 +93,42 @@ The scraper uses `fetch` + `cheerio` + regex to parse Vercel's server-rendered p
 |---------|-------------|
 | `index` | Crawl and index the full catalog |
 | `search QUERY` | Full-text search over titles, descriptions, tags |
+| `search QUERY --semantic` | Semantic search over embeddings (requires `semantic` extra) |
+| `semantic QUERY` | Shorthand for semantic search |
 | `show SLUG` | Show full details for a template |
 | `export` | Dump the indexed catalog to JSON |
 | `stats` | Show framework/category counts |
 | `serve` | Start the REST API server |
+
+## Semantic search
+
+Semantic search is opt-in and requires the `semantic` extra:
+
+```bash
+pip install -e ".[semantic]"
+```
+
+It uses `sqlite-vec` for on-disk vector search and an embedding model from Ollama (default: `nomic-embed-text:latest`). The embedding model URL and name can be configured via environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VTD_OLLAMA_URL` | `http://localhost:11434/api/embed` | Ollama embeddings endpoint |
+| `VTD_EMBEDDING_MODEL` | `nomic-embed-text:latest` | Model name passed to Ollama |
+
+To build an index with embeddings, run:
+
+```bash
+vercel-templates index   # automatically generates embeddings when semantic extra is installed
+```
+
+Then query:
+
+```bash
+vercel-templates semantic "AI chatbot" --limit 5
+vercel-templates search "AI chatbot" --semantic
+```
+
+Without Ollama, the fallback is a deterministic fake model that produces sparse token-frequency vectors. It is useful for CI but not for quality results.
 
 ## REST API server
 
@@ -109,6 +146,7 @@ Endpoints:
 |----------|-------------|
 | `GET /health` | Health check |
 | `GET /templates?q=...&limit=...` | Search or list templates |
+| `GET /templates/semantic?q=...&limit=...` | Semantic search (requires `semantic` extra) |
 | `GET /templates/{slug}` | Get one template by slug (e.g. `/templates/next.js/chatbot`) |
 | `GET /categories` | List frameworks and use cases |
 
@@ -135,6 +173,7 @@ vercel-templates-mcp
 
 Available tools:
 - `search_templates(query, limit)` — search the catalog
+- `search_templates_semantic(query, limit)` — semantic search over embeddings
 - `get_template(slug)` — get full details for a template
 - `list_categories()` — list available categories/frameworks
 
@@ -161,7 +200,7 @@ copy /Y skills\vercel-templates %LOCALAPPDATA%\hermes\skills\vercel-templates
 # or Hermes profile path: ~/.hermes/profiles/default/skills/vercel-templates
 ```
 
-The skill exposes the same three tools as the MCP server and can be used directly by Hermes agents.
+The skill exposes the same tools as the MCP server (including `search_templates_semantic`) and can be used directly by Hermes agents.
 
 ## Project status
 

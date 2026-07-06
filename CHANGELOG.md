@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Official Docker image published to GHCR (`ghcr.io/imkxnny/vercel-templates-discovery`).
+- Multi-stage Dockerfile with Python 3.12 + Node 20, non-root user, and server extras.
+- Missing `ts/tsconfig.json` for TypeScript builds.
 - Mocked HTTP smoke tests for the scraper (`tests/test_scraper_mocked.py`).
 - HTML fixtures for stable category-page and detail-page parsing tests.
 - REST API server (`vercel-templates serve`) with FastAPI/uvicorn.
@@ -17,6 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - This `CHANGELOG.md`.
 - Added `responses` and `httpx` to dev extras for HTTP mocking in tests.
 - Added `fastapi` and `uvicorn` under `server` optional dependencies.
+- Added `sqlite-vec` and `numpy` under a new `semantic` optional dependency for local vector search.
+- Added `vercel_templates/embeddings.py` with Ollama-backed and fake embedding models.
+- Added `sqlite-vec` embeddings table populated at index time when the `semantic` extra is installed.
+- Added `semantic_search()` to `VercelTemplateScraper` using cosine similarity via `sqlite-vec`.
+- Added `vercel-templates semantic` CLI command and `vercel-templates search --semantic` flag.
+- Added `GET /templates/semantic` REST endpoint.
+- Added MCP `search_templates_semantic` tool.
 - Published to PyPI and npm (M4).
 - Docker image with Python + TypeScript CLI (`Dockerfile`, `.dockerignore`, `publish-docker.yml`).
 
@@ -26,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - TypeScript build stage in Dockerfile now correctly copies `tsconfig.json` and `src/` before running `tsc`, enabling GHCR image builds.
 - Added `declarationMap`, `sourceMap`, and `types: ["node"]` to `ts/tsconfig.json` for cleaner published TypeScript artifacts.
+- Aligned TypeScript CLI `--version` output with package.json (0.2.3).
 
 ## [0.2.2] - 2026-07-06
 

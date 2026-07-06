@@ -10,10 +10,10 @@ app = FastAPI(title="Vercel Templates Discovery API", version="0.2.0")
 _scraper: VercelTemplateScraper | None = None
 
 
-def get_scraper() -> VercelTemplateScraper:
+def get_scraper(embedding_model: Any = None) -> VercelTemplateScraper:
     global _scraper  # noqa: PLW0603
     if _scraper is None:
-        _scraper = VercelTemplateScraper()
+        _scraper = VercelTemplateScraper(embedding_model=embedding_model)
     return _scraper
 
 
@@ -36,6 +36,25 @@ def list_templates(
     if q:
         return scraper.search(q, limit=limit)
     return scraper.all_templates(limit=limit)
+
+
+@app.get("/templates/semantic")
+def search_semantic(
+    q: str,
+    limit: int = 10,
+) -> list[dict[str, Any]]:
+    try:
+        from .embeddings import get_model
+
+        scraper = get_scraper(embedding_model=get_model())
+        return scraper.semantic_search(q, limit=limit)
+    except ImportError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Semantic search not installed. Add the semantic extra.",
+        ) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 
 @app.get("/templates/{slug:path}")

@@ -8,8 +8,8 @@ from .scraper import VercelTemplateScraper
 class MCPServer:
     """A minimal Model Context Protocol server over stdio."""
 
-    def __init__(self) -> None:
-        self.scraper = VercelTemplateScraper()
+    def __init__(self, embedding_model: Any = None) -> None:
+        self.scraper = VercelTemplateScraper(embedding_model=embedding_model)
 
     def run(self) -> None:
         while True:
@@ -96,6 +96,18 @@ class MCPServer:
                 "description": "List the available template categories/frameworks in the catalog.",
                 "inputSchema": {"type": "object", "properties": {}},
             },
+            {
+                "name": "search_templates_semantic",
+                "description": "Search the indexed Vercel Templates catalog by semantic similarity.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {"type": "string", "description": "Semantic search query"},
+                        "limit": {"type": "integer", "default": 10},
+                    },
+                    "required": ["query"],
+                },
+            },
         ]
 
     def _handle_tool_call(self, msg_id: Any, params: dict[str, Any]) -> None:
@@ -122,6 +134,11 @@ class MCPServer:
                         if uc:
                             categories.add(uc)
                 self._send_tool_response(msg_id, sorted(categories))
+            elif name == "search_templates_semantic":
+                query = arguments.get("query", "")
+                limit = arguments.get("limit", 10)
+                results = self.scraper.semantic_search(query, limit=limit)
+                self._send_tool_response(msg_id, results)
             else:
                 self._send_error(msg_id, -32602, f"Tool not found: {name}")
         except Exception as exc:
@@ -152,7 +169,13 @@ class MCPServer:
 
 
 def main() -> None:
-    server = MCPServer()
+    try:
+        from .embeddings import get_model
+
+        model = get_model()
+    except Exception:
+        model = None
+    server = MCPServer(embedding_model=model)
     server.run()
 
 

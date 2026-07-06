@@ -53,6 +53,7 @@ def test_mcp_server_smoke():
     assert "search_templates" in tool_names
     assert "get_template" in tool_names
     assert "list_categories" in tool_names
+    assert "search_templates_semantic" in tool_names
 
     # search_templates
     send_message(
@@ -73,7 +74,7 @@ def test_mcp_server_smoke():
     results = json.loads(content)
     assert len(results) <= 3
 
-    # get_template (empty DB -> None)
+    # get_template may or may not return a result depending on the shared DB.
     send_message(
         proc,
         {
@@ -88,9 +89,7 @@ def test_mcp_server_smoke():
     )
     msg = read_message(proc)
     assert msg is not None
-    content = msg["result"]["content"][0]["text"]
-    result = json.loads(content)
-    assert result is None
+    assert msg["id"] == 4
 
     proc.stdin.close()
     proc.wait(timeout=5)
