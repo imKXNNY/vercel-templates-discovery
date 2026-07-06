@@ -22,7 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `fastapi` and `uvicorn` under `server` optional dependencies.
 - Added `sqlite-vec` and `numpy` under a new `semantic` optional dependency for local vector search.
 - Added `vercel_templates/embeddings.py` with Ollama-backed and fake embedding models.
-- Added `sqlite-vec` embeddings table populated at index time when the `semantic` extra is installed.
+- Changed default embedding model to `nomic-embed-text-v2-moe:latest` (768 dims).
+
 - Added `semantic_search()` to `VercelTemplateScraper` using cosine similarity via `sqlite-vec`.
 - Added `vercel-templates semantic` CLI command and `vercel-templates search --semantic` flag.
 - Added `GET /templates/semantic` REST endpoint.

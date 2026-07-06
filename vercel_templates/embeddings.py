@@ -7,7 +7,7 @@ from typing import Any, Protocol
 import numpy as np
 
 _OLLAMA_URL = os.getenv("VTD_OLLAMA_URL", "http://localhost:11434/api/embed")
-_MODEL_NAME = os.getenv("VTD_EMBEDDING_MODEL", "nomic-embed-text:latest")
+_MODEL_NAME = os.getenv("VTD_EMBEDDING_MODEL", "nomic-embed-text-v2-moe:latest")
 _DIMENSIONS = 768
 
 

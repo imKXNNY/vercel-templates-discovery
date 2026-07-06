@@ -108,12 +108,14 @@ Semantic search is opt-in and requires the `semantic` extra:
 pip install -e ".[semantic]"
 ```
 
-It uses `sqlite-vec` for on-disk vector search and an embedding model from Ollama (default: `nomic-embed-text:latest`). The embedding model URL and name can be configured via environment variables:
+It uses `sqlite-vec` for on-disk vector search and an embedding model from Ollama (default: `nomic-embed-text-v2-moe:latest`). The embedding model URL and name can be configured via environment variables:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `VTD_OLLAMA_URL` | `http://localhost:11434/api/embed` | Ollama embeddings endpoint |
-| `VTD_EMBEDDING_MODEL` | `nomic-embed-text:latest` | Model name passed to Ollama |
+| `VTD_EMBEDDING_MODEL` | `nomic-embed-text-v2-moe:latest` | Model name passed to Ollama |
+
+> **Note:** When you switch embedding models, vectors in the existing index are no longer semantically compatible. Run `vercel-templates index --reset` (or delete the `embeddings` table) and re-index.
 
 To build an index with embeddings, run:
 
