@@ -55,7 +55,7 @@ M5 roadmap has begun:
 
 - [x] Semantic search with embeddings (Python)
   - [x] `sqlite-vec` + `numpy` under `semantic` extra
-  - [x] Ollama-based embedding model (`nomic-embed-text:latest`)
+  - [x] Ollama-based embedding model (`nomic-embed-text-v2-moe:latest`)
   - [x] Vector table populated at index time
   - [x] CLI `semantic` command and `search --semantic` flag
   - [x] REST `GET /templates/semantic`
@@ -80,6 +80,7 @@ M5 roadmap has begun:
 4. **Semantic search** — unlocks intent-based discovery.
 5. **PyPI / npm publish** — makes adoption frictionless.
 6. **GitHub Project views** — table, board, roadmap for tracking issues.
+7. **Benchmark multi-modal embedding models** — evaluate `embeddinggemma` and `qwen3-embedding` via Ollama for future projects that benefit from image/text embeddings (see pending research subagents).
 
 ## Open questions
 
