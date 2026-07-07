@@ -242,6 +242,13 @@ The scraper parses Vercel's server-rendered pages and Next.js flight payloads to
 
 See [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) for the roadmap and [CHANGELOG.md](CHANGELOG.md) for release notes. Version 1.0.0 is released and available on [PyPI](https://pypi.org/project/vercel-templates-discovery/) and [npm](https://www.npmjs.com/package/@imkxnny/vercel-templates-discovery). A Docker image is built automatically for each tag and published to GitHub Container Registry once the repository is public.
 
+## Feedback
+
+This project is **unofficial and community-driven**. Feedback, ideas, and bug reports are very welcome:
+
+- Open a [GitHub Issue](https://github.com/imKXNNY/vercel-templates-discovery/issues)
+- Join the discussion on the [Vercel Community Showcase](https://community.vercel.com/t/community-tool-searchable-agent-friendly-vercel-templates-discovery-feedback-wanted/45314)
+
 ## Disclaimer
 
 This is an **unofficial, community-maintained tool**. It is **not affiliated with, endorsed by, or sponsored by Vercel**. It is intended for personal research, local catalog building, and agent workflows. Please review Vercel's Terms of Service and use responsibly.
