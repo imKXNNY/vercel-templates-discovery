@@ -81,13 +81,10 @@ Become the standard agentic discovery layer for Vercel Templates — a searchabl
 
 ## Backlog (next-best todos)
 
-1. **Docker image** — easiest remaining distribution win.
-2. **Nightly re-index** — keeps catalog fresh automatically.
-3. **JSON catalog release artifact** — lets agents fetch the catalog without scraping.
-4. **Hermes skill wrapper** — native integration into your assistant stack.
-5. **Template recommendation / diff / trending** — advanced discovery features.
-6. **Benchmark multi-modal embedding models** — evaluate `embeddinggemma` and `qwen3-embedding` via Ollama for future projects that benefit from image/text embeddings.
-7. **CHANGELOG.md + smoke tests** — project hygiene.
+1. **Hermes skill wrapper** — native integration into your assistant stack. [x]
+2. **CHANGELOG.md + smoke tests** — project hygiene.
+3. **Template recommendation / diff / trending** — advanced discovery features.
+4. **Benchmark multi-modal embedding models** — evaluate `embeddinggemma` and `qwen3-embedding` via Ollama for future projects that benefit from image/text embeddings.
 
 ## Open questions
 
