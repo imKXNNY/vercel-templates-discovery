@@ -1,6 +1,8 @@
 # Vercel Templates Discovery
 
-> Agentic CLI for discovering, indexing, and searching [Vercel Templates](https://vercel.com/templates). No public API exists — this tool fills the gap for agents and developers who want a searchable, local catalog with install commands.
+> **Unofficial** agentic CLI for discovering, indexing, and searching [Vercel Templates](https://vercel.com/templates). This project is **not affiliated with, endorsed by, or sponsored by Vercel**. It is an independent community tool that helps users find and install Vercel templates.
+>
+> No public API for the Vercel Templates gallery exists — this tool fills the gap for agents and developers who want a searchable, local catalog with install commands.
 
 ## Quick start (Python)
 
@@ -29,8 +31,11 @@ vercel-templates semantic "ecommerce" --limit 3
 # 5. Show details
 vercel-templates show /templates/next.js/chatbot
 
-# 6. Export to JSON
+# 6. Export to JSON (metadata only by default; omit full READMEs)
 vercel-templates export --output templates.json
+
+# Include full READMEs in the export (not recommended for public redistribution)
+vercel-templates export --output templates.json --include-readmes
 ```
 
 ## Quick start (TypeScript / WSL)

@@ -5,21 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] - 2026-07-07
 
 ### Added
 
-- `vercel-templates diff` command in Python and TypeScript to compare two templates side by side.
-- Support for `--json` and `--fields` in the diff command.
-- `vercel-templates recent` and `vercel-templates trending` commands in Python and TypeScript.
-- REST endpoints `/templates/recent` and `/templates/trending`.
-- MCP tools `list_recent_templates` and `list_trending_templates`.
-- `--by-category` grouping for trending output.
 - `vercel-templates recommend <stack>` command in Python and TypeScript.
 - Scoring based on frameworks, use cases, databases, CSS, authentication, CMS, title, and description.
 - `--require-all-frameworks` flag for strict framework matching.
 - REST endpoint `/templates/recommend?stack=...`.
-- MCP tool `recommend_templates`.
+- MCP tool `recommend_templates` in Python and TypeScript MCP servers.
+- `vercel-templates diff` command in Python and TypeScript to compare two templates side by side.
+- Support for `--json` and `--fields` in the diff command.
+- `vercel-templates recent` and `vercel-templates trending` commands in Python and TypeScript.
+- REST endpoints `/templates/recent` and `/templates/trending`.
+- MCP tools `list_recent_templates` and `list_trending_templates` in Python and TypeScript.
+- `--by-category` grouping for trending output.
+- Vercel ToS compliance review (`docs/VERCEL_TOS_REVIEW.md`).
+- README disclaimer: unofficial, not affiliated with Vercel.
+- `export` now supports `--include-readmes` to opt into full README text.
+
+### Changed
+
+- `export` defaults to metadata-only; full READMEs require `--include-readmes`.
+- `catalog.json` redistributed without full README text to reduce copyright risk.
+- Python and TypeScript versions bumped to `1.0.0`.
 
 ## [0.2.5] - 2026-07-07
 
@@ -44,23 +53,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Release workflow race conditions: added concurrency group and npm version-existence check.
-- npm version mismatch that caused `v0.2.4` publish to fail.
-
-## [0.2.4] - 2026-07-07
-
-### Added
-
-- `sqlite-vec` vector table and semantic search in Python.
-- `nomic-embed-text-v2-moe:latest` embedding model via Ollama with fake fallback.
-- `GET /templates/semantic` REST endpoint.
-- Tag-based release workflow for PyPI and npm.
-
-## [0.2.3] - 2026-07-06
-
-### Added
-
-- TypeScript port of the scraper, CLI, database, and MCP server.
-- npm package `@imkxnny/vercel-templates-discovery`.
 
 ## [0.2.0] - 2026-07-05
 

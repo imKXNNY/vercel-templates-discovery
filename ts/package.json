@@ -1,6 +1,6 @@
 {
   "name": "@imkxnny/vercel-templates-discovery",
-  "version": "0.2.5",
+  "version": "1.0.0",
   "description": "Agentic discovery for Vercel Templates",
   "type": "module",
   "main": "dist/index.js",

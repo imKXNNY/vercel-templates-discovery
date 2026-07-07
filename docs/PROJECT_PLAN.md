@@ -69,8 +69,8 @@ Become the standard agentic discovery layer for Vercel Templates — a searchabl
 - [x] Diff / compare templates
 - [x] Trending / newly added templates
 - [x] Template recommendation by stack / features
-
-### M6 — Publish & community (partially done)
+- [x] Vercel ToS review before public launch
+- [x] Public release v1.0.0
 *Goal: make the project public and maintainable.*
 
 - [x] Public GitHub repo
