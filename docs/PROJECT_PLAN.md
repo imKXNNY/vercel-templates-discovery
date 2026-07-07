@@ -4,14 +4,19 @@
 
 Become the standard agentic discovery layer for Vercel Templates — a searchable, always-up-to-date catalog that AI agents and developers can query to find the best starting point for any project.
 
-## Current state (v0.1.0)
+## Current state (v0.2.5)
 
-- [x] CLI that indexes the Vercel Templates gallery (~277 templates)
-- [x] SQLite cache with FTS5 keyword search
-- [x] Metadata extraction: title, description, GitHub URL, owner, repo, install command
+- [x] Python CLI that indexes the Vercel Templates gallery (~277 templates)
+- [x] TypeScript CLI port with parity
+- [x] SQLite cache with FTS5 keyword search + sqlite-vec semantic search
+- [x] Metadata extraction: title, description, GitHub URL, owner, repo, install command, README text
 - [x] JSON output for agent consumption
-- [x] Private GitHub repo initialized
+- [x] Public GitHub repo
 - [x] CI workflow with lint, type check, tests
+- [x] PyPI + npm packages published via tag-based release workflow
+- [x] MCP server (Python + TypeScript)
+- [x] REST API server (Python)
+- [x] LICENSE + README for both packages
 
 ## Milestones
 
@@ -24,63 +29,65 @@ Become the standard agentic discovery layer for Vercel Templates — a searchabl
 - [x] CLI commands: `index`, `search`, `show`, `export`, `stats`
 - [x] Git repo, `.gitignore`, README, CONTRIBUTING
 
-### M2 — Data quality & robustness
+### M2 — Data quality & robustness (partially done)
 *Goal: extract more value and survive Vercel UI changes.*
 
-- [ ] Extract full README text from detail pages
-- [ ] Add retry / backoff / rate-limit handling
-- [ ] Add CLI smoke tests with mocked HTTP responses
-- [ ] Improve framework/use-case/category classification
+- [x] Extract README text from detail pages (best-effort from flight payload)
+- [x] Add retry / backoff / rate-limit handling
+- [x] Improve framework/use-case/category classification
 - [ ] Add CHANGELOG.md
+- [ ] Add CLI smoke tests with mocked HTTP responses
 
-### M3 — Agent integration
+### M3 — Agent integration (partially done)
 *Goal: make the tool trivial for AI agents to use.*
 
-- [ ] MCP server exposing `search_templates`, `get_template`, `list_categories`
+- [x] MCP server exposing `search_templates`, `get_template`, `list_categories`
+- [x] MCP `search_templates_semantic` tool (Python + TypeScript)
+- [x] OpenAPI/REST server mode
 - [ ] Hermes skill wrapper
-- [ ] OpenAPI/REST server mode
 - [ ] Publish JSON catalog as a release artifact
 
-### M4 — Portability & distribution
+### M4 — Portability & distribution (partially done)
 *Goal: easy install everywhere, including WSL/Windows.*
 
-- [ ] Port core scraper to TypeScript / Node
-- [ ] PyPI package
-- [ ] npm package
+- [x] Port core scraper to TypeScript / Node
+- [x] PyPI package
+- [x] npm package
+- [x] Tag-based release workflow with race-condition guards
 - [ ] Docker image
 - [ ] Nightly GitHub Actions re-index that commits the JSON catalog
 
-### M5 — Advanced discovery
-M5 roadmap has begun:
+### M5 — Advanced discovery (partially done)
+*Goal: unlock intent-based discovery.*
 
-- [x] Semantic search with embeddings (Python)
-  - [x] `sqlite-vec` + `numpy` under `semantic` extra
-  - [x] Ollama-based embedding model (`nomic-embed-text-v2-moe:latest`)
-  - [x] Vector table populated at index time
-  - [x] CLI `semantic` command and `search --semantic` flag
-  - [x] REST `GET /templates/semantic`
-  - [x] MCP `search_templates_semantic` tool
+- [x] Semantic search with embeddings (Python + TypeScript)
+- [x] Ollama-based embedding model (`nomic-embed-text-v2-moe:latest`) with fake fallback
+- [x] Vector table populated at index time
+- [x] CLI `semantic` command and `search --semantic` flag
+- [x] REST `GET /templates/semantic`
+- [x] MCP `search_templates_semantic` tool
 - [ ] Template recommendation by stack / features
 - [ ] Diff / compare templates
 - [ ] Trending / newly added templates
 
-### M6 — Publish & community
+### M6 — Publish & community (partially done)
 *Goal: make the project public and maintainable.*
 
-- [ ] Resolve README extraction and any legal/ToS concerns
-- [ ] Public GitHub repo
+- [x] Public GitHub repo
+- [x] Resolve README extraction (best-effort implemented)
+- [ ] Review Vercel ToS concerns before public launch
 - [ ] Release v1.0.0
 - [ ] Documentation site
 
 ## Backlog (next-best todos)
 
-1. **README extraction** — biggest data gap right now.
-2. **MCP server** — biggest agent-impact next step.
-3. **WSL / TypeScript port** — solves your native Windows dependency issue.
-4. **Semantic search** — unlocks intent-based discovery.
-5. **PyPI / npm publish** — makes adoption frictionless.
-6. **GitHub Project views** — table, board, roadmap for tracking issues.
-7. **Benchmark multi-modal embedding models** — evaluate `embeddinggemma` and `qwen3-embedding` via Ollama for future projects that benefit from image/text embeddings (see pending research subagents).
+1. **Docker image** — easiest remaining distribution win.
+2. **Nightly re-index** — keeps catalog fresh automatically.
+3. **JSON catalog release artifact** — lets agents fetch the catalog without scraping.
+4. **Hermes skill wrapper** — native integration into your assistant stack.
+5. **Template recommendation / diff / trending** — advanced discovery features.
+6. **Benchmark multi-modal embedding models** — evaluate `embeddinggemma` and `qwen3-embedding` via Ollama for future projects that benefit from image/text embeddings.
+7. **CHANGELOG.md + smoke tests** — project hygiene.
 
 ## Open questions
 
