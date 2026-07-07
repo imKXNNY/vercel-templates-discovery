@@ -1,5 +1,6 @@
 import { VercelTemplateScraper } from "./scraper.js";
-import type { JsonRpcRequest, JsonRpcResponse } from "./types.js";
+import { getModel } from "./embeddings.js";
+import type { JsonRpcRequest, JsonRpcResponse, EmbeddingModel } from "./types.js";
 
 interface MCPServerOptions {
   dbPath?: string;
@@ -8,10 +9,12 @@ interface MCPServerOptions {
 export class MCPServer {
   private scraper: VercelTemplateScraper;
   private db: VercelTemplateScraper["db"];
+  private modelPromise: Promise<EmbeddingModel>;
 
   constructor(options: MCPServerOptions = {}) {
     this.scraper = new VercelTemplateScraper({ dbPath: options.dbPath });
     this.db = this.scraper.db;
+    this.modelPromise = getModel();
   }
 
   run() {
@@ -84,7 +87,7 @@ export class MCPServer {
             capabilities: { tools: {} },
             serverInfo: {
               name: "vercel-templates-discovery",
-              version: "0.2.0",
+              version: "0.2.4",
             },
           },
         };
@@ -117,6 +120,18 @@ export class MCPServer {
                     slug: { type: "string" },
                   },
                   required: ["slug"],
+                },
+              },
+              {
+                name: "search_templates_semantic",
+                description: "Semantic search over the Vercel Templates catalog (requires embeddings index)",
+                inputSchema: {
+                  type: "object",
+                  properties: {
+                    query: { type: "string" },
+                    limit: { type: "integer" },
+                  },
+                  required: ["query"],
                 },
               },
               {
@@ -156,9 +171,21 @@ export class MCPServer {
             jsonrpc: "2.0",
             id,
             result: {
-              content: [
-                { type: "text", text: JSON.stringify(results, null, 2) },
-              ],
+              content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
+            },
+          };
+        }
+
+        if (name === "search_templates_semantic") {
+          const query = String(args.query || "");
+          const limit = Number(args.limit || 10);
+          this.scraper.embeddingModel = await this.modelPromise;
+          const results = await this.scraper.semanticSearch(query, limit);
+          return {
+            jsonrpc: "2.0",
+            id,
+            result: {
+              content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
             },
           };
         }
@@ -173,9 +200,7 @@ export class MCPServer {
               content: [
                 {
                   type: "text",
-                  text: t
-                    ? JSON.stringify(t, null, 2)
-                    : `Template not found: ${slug}`,
+                  text: t ? JSON.stringify(t, null, 2) : `Template not found: ${slug}`,
                 },
               ],
             },
@@ -191,9 +216,7 @@ export class MCPServer {
             jsonrpc: "2.0",
             id,
             result: {
-              content: [
-                { type: "text", text: JSON.stringify(categories, null, 2) },
-              ],
+              content: [{ type: "text", text: JSON.stringify(categories, null, 2) }],
             },
           };
         }
@@ -203,10 +226,7 @@ export class MCPServer {
 
       return error(-32601, `Method not found: ${method}`);
     } catch (err) {
-      return error(
-        -32603,
-        err instanceof Error ? err.message : String(err),
-      );
+      return error(-32603, err instanceof Error ? err.message : String(err));
     }
   }
 

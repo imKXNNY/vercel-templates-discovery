@@ -12,21 +12,28 @@ import type { DiscoveredTemplate, Template, TemplateInput } from "./types.js";
 
 const { decode } = he;
 
+import { embeddingText, getModel } from "./embeddings.js";
+import type { EmbeddingModel } from "./types.js";
+
 export interface ScraperOptions {
   delay?: number;
   maxWorkers?: number;
   dbPath?: string;
+  embeddingModel?: EmbeddingModel | false;
 }
 
 export class VercelTemplateScraper {
   private delay: number;
   private maxWorkers: number;
   readonly db: TemplateDatabase;
+  embeddingModel: EmbeddingModel | undefined;
 
   constructor(options: ScraperOptions = {}) {
     this.delay = options.delay ?? 0.5;
     this.maxWorkers = options.maxWorkers ?? 8;
     this.db = new TemplateDatabase(options.dbPath);
+    this.embeddingModel =
+      options.embeddingModel === false ? undefined : options.embeddingModel;
   }
 
   private async _get(url: string, retries = 3): Promise<string> {
@@ -205,7 +212,7 @@ export class VercelTemplateScraper {
       }
     });
 
-    this.db.saveTemplates(enriched);
+    await this.db.saveTemplates(enriched, this.embeddingModel);
     return enriched.length;
   }
 
@@ -213,6 +220,7 @@ export class VercelTemplateScraper {
     const slug = t.slug || "";
     const github = t.github_url || "";
     const framework = (t.frameworks || t.framework || "").toLowerCase();
+
     const exampleMatch = github.match(
       /github\.com\/vercel\/vercel\/tree\/[^/]+\/examples\/([^/]+)$/,
     );
@@ -269,6 +277,16 @@ export class VercelTemplateScraper {
 
   search(query: string, limit = 10): Template[] {
     return this.db.search(query, limit);
+  }
+
+  async semanticSearch(query: string, limit = 10): Promise<Template[]> {
+    if (!this.embeddingModel) {
+      throw new Error(
+        "No embedding model configured. Pass embeddingModel to the scraper or set up Ollama.",
+      );
+    }
+    const vec = await this.embeddingModel.encodeSingle(query);
+    return this.db.semanticSearch(vec, limit);
   }
 
   get(slug: string): Template | undefined {

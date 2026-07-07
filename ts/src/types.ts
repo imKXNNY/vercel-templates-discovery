@@ -46,3 +46,15 @@ export interface JsonRpcResponse {
     data?: unknown;
   };
 }
+
+export interface EmbeddingModel {
+  modelName: string;
+  dimensions: number;
+  encode(texts: string[]): Promise<Float32Array[]>;
+  encodeSingle(text: string): Promise<Float32Array>;
+}
+
+export interface EmbeddingResult {
+  template: Template;
+  distance: number;
+}

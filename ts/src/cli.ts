@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import { VercelTemplateScraper } from "./scraper.js";
+import { getModel } from "./embeddings.js";
 
 const program = new Command();
 
@@ -22,9 +23,14 @@ program
   .description("Re-index the full Vercel Templates catalog")
   .option("-c, --concurrency <n>", "number of concurrent detail fetches", "8")
   .option("-d, --db <path>", "path to the SQLite cache file")
+  .option("--reset", "drop existing index before re-indexing")
   .action(async (options) => {
     const scraper = new VercelTemplateScraper({ dbPath: options.db });
     try {
+      if (options.reset) {
+        scraper.db.reset();
+        console.log("Existing index dropped.");
+      }
       const count = await scraper.index(parseConcurrency(options.concurrency));
       console.log(`Indexed ${count} templates`);
     } finally {
@@ -38,15 +44,54 @@ program
   .option("-l, --limit <n>", "max results", "10")
   .option("-j, --json", "output as JSON")
   .option("-d, --db <path>", "path to the SQLite cache file")
+  .option("--semantic", "use semantic search (requires Ollama)")
   .action(async (query, options) => {
     const scraper = new VercelTemplateScraper({ dbPath: options.db });
     try {
-      const rows = scraper.search(query, Number(options.limit));
+      let rows: unknown[];
+      if (options.semantic) {
+        const model = await getModel();
+        scraper.embeddingModel = model;
+        rows = await scraper.semanticSearch(query, Number(options.limit));
+      } else {
+        rows = scraper.search(query, Number(options.limit));
+      }
       if (options.json) {
         console.log(JSON.stringify(rows, null, 2));
       } else {
-        for (const t of rows) {
-          console.log(`${t.title} — ${t.slug}`);
+        for (const t of rows as Array<{ title: string; slug: string; description: string; distance?: number }>) {
+          let line = `${t.title} — ${t.slug}`;
+          if (typeof t.distance === "number") {
+            line += ` (distance: ${t.distance.toFixed(4)})`;
+          }
+          console.log(line);
+          const snippet = t.description.slice(0, 120);
+          const ellipsis = t.description.length > 120 ? "..." : "";
+          console.log(`  ${snippet}${ellipsis}`);
+        }
+      }
+    } finally {
+      scraper.close();
+    }
+  });
+
+program
+  .command("semantic <query>")
+  .description("Semantic search over indexed templates (requires Ollama)")
+  .option("-l, --limit <n>", "max results", "10")
+  .option("-j, --json", "output as JSON")
+  .option("-d, --db <path>", "path to the SQLite cache file")
+  .action(async (query, options) => {
+    const scraper = new VercelTemplateScraper({ dbPath: options.db });
+    try {
+      const model = await getModel();
+      scraper.embeddingModel = model;
+      const rows = await scraper.semanticSearch(query, Number(options.limit));
+      if (options.json) {
+        console.log(JSON.stringify(rows, null, 2));
+      } else {
+        for (const t of rows as Array<{ title: string; slug: string; description: string; distance?: number }>) {
+          console.log(`${t.title} — ${t.slug} (distance: ${(t.distance ?? 0).toFixed(4)})`);
           const snippet = t.description.slice(0, 120);
           const ellipsis = t.description.length > 120 ? "..." : "";
           console.log(`  ${snippet}${ellipsis}`);
