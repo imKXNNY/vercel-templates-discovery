@@ -98,7 +98,7 @@ class FakeEmbeddingModel:
             vec[dims] += 1.0
         if np.linalg.norm(vec) == 0:
             rng = np.random.default_rng(0)
-            vec = np.array(rng.random(self.dimensions), dtype=np.float32)
+            vec[:] = rng.random(self.dimensions).astype(np.float32)
         vec /= np.linalg.norm(vec)
         return vec
 
