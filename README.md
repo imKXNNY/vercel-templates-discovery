@@ -1,149 +1,140 @@
 # Vercel Templates Discovery
 
-> **Unofficial** agentic CLI for discovering, indexing, and searching [Vercel Templates](https://vercel.com/templates). This project is **not affiliated with, endorsed by, or sponsored by Vercel**. It is an independent community tool that helps users find and install Vercel templates.
->
-> No public API for the Vercel Templates gallery exists — this tool fills the gap for agents and developers who want a searchable, local catalog with install commands.
+[![PyPI](https://img.shields.io/pypi/v/vercel-templates-discovery)](https://pypi.org/project/vercel-templates-discovery/)
+[![npm](https://img.shields.io/npm/v/@imkxnny/vercel-templates-discovery)](https://www.npmjs.com/package/@imkxnny/vercel-templates-discovery)
+[![CI](https://github.com/imKXNNY/vercel-templates-discovery/actions/workflows/ci.yml/badge.svg)](https://github.com/imKXNNY/vercel-templates-discovery/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Quick start (Python)
+Discover, index, and search the [Vercel Templates](https://vercel.com/templates) gallery from your terminal or agent.
+
+No public Vercel API exists — this tool builds a local, searchable catalog with install commands, metadata, and semantic search so you can find the right starter template in seconds.
+
+## Quick start
+
+Get the first search result in under a minute:
 
 ```bash
-# Install from PyPI (once published)
 pip install vercel-templates-discovery
-
-# Or install locally for development
-pip install -e ".[dev]"
-
-# Or run via Docker
-docker run --rm ghcr.io/imkxnnny/vercel-templates-discovery:latest vercel-templates --help
-
-# Index the catalog
 vercel-templates index
-
-# 3. Search
-vercel-templates search "AI chatbot"
-vercel-templates search "ecommerce" --limit 3
-vercel-templates search "AI chatbot" --semantic  # semantic search by intent
-
-# 4. Semantic search
-vercel-templates semantic "AI chatbot"
-vercel-templates semantic "ecommerce" --limit 3
-
-# 5. Show details
-vercel-templates show /templates/next.js/chatbot
-
-# 6. Export to JSON (metadata only by default; omit full READMEs)
-vercel-templates export --output templates.json
-
-# Include full READMEs in the export (not recommended for public redistribution)
-vercel-templates export --output templates.json --include-readmes
+vercel-templates search "ai chatbot" --json
 ```
 
-## Quick start (TypeScript / WSL)
+Example output:
+
+```json
+[
+  {
+    "slug": "/templates/next.js/chatbot",
+    "title": "Chatbot",
+    "description": "A full-featured, hackable Next.js AI chatbot built by Vercel",
+    "github_url": "https://github.com/vercel/chatbot",
+    "owner": "vercel",
+    "repository": "chatbot"
+  }
+]
+```
+
+## What you get
+
+- **Search by keyword** — full-text search over titles, descriptions, frameworks, and use cases.
+- **Search by intent** — semantic search with local embeddings (opt-in via Ollama).
+- **Show details** — print GitHub URL, install command, README excerpt, and metadata for any template.
+- **Compare templates** — diff two templates side by side by fields.
+- **Recommend templates** — score templates against a stack or feature set.
+- **Stay current** — nightly re-index workflow or `vercel-templates index --reset`.
+- **Plug into agents** — MCP server, REST API, and Hermes skill included.
+- **Use it anywhere** — Python CLI, TypeScript CLI, local Docker build, or programmatic API.
+
+## Installation
+
+### Python (pip)
 
 ```bash
-# Install globally from npm (published)
+pip install vercel-templates-discovery
+```
+
+Requires Python 3.10+.
+
+### TypeScript / Node (npm)
+
+```bash
 npm install -g @imkxnny/vercel-templates-discovery
-
-# Or work locally
-cd ts
-npm install
-
-# Build once, or run via tsx
-npm run build
-npm run typecheck:all
-npm test
-
-# Index the catalog
-npx tsx src/cli.ts index
-
-# Search / show
-npx tsx src/cli.ts search "AI chatbot" --json
-npx tsx src/cli.ts show /templates/next.js/chatbot --json
 ```
 
-## Why this exists
+Requires Node.js 20+.
 
-Vercel maintains a curated library of high-quality templates, but provides no SDK, CLI, or API for discovering them. This tool:
+### Docker
 
-- Crawls the Vercel Templates gallery (~277 templates).
-- Extracts metadata, GitHub URLs, and install commands.
-- Stores everything in a local SQLite cache with full-text search.
-- Exposes a simple CLI that agents can call or shell out to.
-
-## Architecture
-
-```text
-vercel_templates/          # Python implementation
-├── config.py              # categories, cache path, constants
-├── scraper.py             # crawler + detail extractor + SQLite cache
-└── cli.py                 # Typer CLI
-
-ts/                        # TypeScript / Node implementation
-├── src/
-│   ├── scraper.ts         # crawler + detail extractor
-│   ├── db.ts              # SQLite cache + FTS5 search
-│   ├── cli.ts             # Commander CLI
-│   ├── mcp-server.ts      # stdio JSON-RPC MCP server
-│   └── index.ts           # library exports
-├── tests/
-│   └── scraper.test.ts    # vitest tests
-└── package.json
-```
-
-The scraper uses `fetch` + `cheerio` + regex to parse Vercel's server-rendered pages and Next.js flight payloads. Because the catalog is small, the entire index can be rebuilt in under a minute.
-
-## Commands
-
-| Command | Description |
-|---------|-------------|
-| `index` | Crawl and index the full catalog |
-| `search QUERY` | Full-text search over titles, descriptions, tags |
-| `search QUERY --semantic` | Semantic search over embeddings (requires `semantic` extra) |
-| `semantic QUERY` | Shorthand for semantic search |
-| `show SLUG` | Show full details for a template |
-| `export` | Dump the indexed catalog to JSON |
-| `stats` | Show framework/category counts |
-| `serve` | Start the REST API server |
-
-## Semantic search
-
-Semantic search is opt-in and requires the `semantic` extra:
+A Docker image is built automatically on tagged releases. To build locally before the first image is published:
 
 ```bash
-pip install -e ".[semantic]"
+docker build -t vercel-templates-discovery .
+docker run --rm vercel-templates-discovery vercel-templates --help
 ```
 
-It uses `sqlite-vec` for on-disk vector search and an embedding model from Ollama (default: `nomic-embed-text-v2-moe:latest`). The embedding model URL and name can be configured via environment variables:
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `VTD_OLLAMA_URL` | `http://localhost:11434/api/embed` | Ollama embeddings endpoint |
-| `VTD_EMBEDDING_MODEL` | `nomic-embed-text-v2-moe:latest` | Model name passed to Ollama |
-
-> **Note:** When you switch embedding models, vectors in the existing index are no longer semantically compatible. Run `vercel-templates index --reset` (or delete the `embeddings` table) and re-index.
-
-To build an index with embeddings, run:
+To persist the index, mount a volume:
 
 ```bash
-vercel-templates index   # automatically generates embeddings when semantic extra is installed
+docker run --rm -v vercel-templates-cache:/root/.cache/vercel-templates \
+  vercel-templates-discovery vercel-templates index
 ```
 
-Then query:
+## Usage
+
+### Index the catalog
 
 ```bash
+vercel-templates index
+```
+
+### Keyword search
+
+```bash
+vercel-templates search "ai chatbot" --limit 3
+vercel-templates search "ecommerce" --json
+```
+
+### Semantic search
+
+```bash
+pip install -e ".[semantic]"          # Python only; npm package includes sqlite-vec by default
 vercel-templates semantic "AI chatbot" --limit 5
 vercel-templates search "AI chatbot" --semantic
 ```
 
-Without Ollama, the fallback is a deterministic fake model that produces sparse token-frequency vectors. It is useful for CI but not for quality results.
+Semantic search requires a running Ollama instance (default: `http://localhost:11434`). See [Configuration](#configuration) for customization.
 
-## REST API server
+### Show details for a template
 
-Run the server with:
+```bash
+vercel-templates show /templates/next.js/chatbot
+```
+
+### Compare two templates
+
+```bash
+vercel-templates diff /templates/next.js/chatbot /templates/next.js/blog
+```
+
+### Get recommendations by stack
+
+```bash
+vercel-templates recommend "next.js, ai, tailwind"
+```
+
+### Export the catalog
+
+```bash
+vercel-templates export --output templates.json
+vercel-templates export --output templates.json --include-readmes
+```
+
+The default export includes metadata only. Full READMEs are opt-in via `--include-readmes`.
+
+### REST API server
 
 ```bash
 vercel-templates serve
-# or
 vercel-templates serve --host 0.0.0.0 --port 8080
 ```
 
@@ -152,39 +143,37 @@ Endpoints:
 | Endpoint | Description |
 |----------|-------------|
 | `GET /health` | Health check |
-| `GET /templates?q=...&limit=...` | Search or list templates |
+| `GET /templates?q=...&limit=...` | Keyword search |
 | `GET /templates/semantic?q=...&limit=...` | Semantic search (requires `semantic` extra) |
-| `GET /templates/{slug}` | Get one template by slug (e.g. `/templates/next.js/chatbot`) |
+| `GET /templates/recommend?stack=...` | Recommend by stack |
+| `GET /templates/recent` | Recently added templates |
+| `GET /templates/trending` | Trending templates |
+| `GET /templates/{slug}` | Get one template by slug |
 | `GET /categories` | List frameworks and use cases |
 
-## Agentic usage
-
-The CLI is designed to be easy for agents to consume:
-
-```bash
-# JSON output for downstream parsing
-vercel-templates search "AI chatbot" --json
-vercel-templates show /templates/next.js/chatbot --json
-```
+## Agent integration
 
 ### MCP server
 
-An MCP (Model Context Protocol) server is included for direct agent integration:
+Start the stdio MCP server (blocks and reads/writes JSON-RPC messages on stdin/stdout):
 
 ```bash
-# Start the MCP server
 python -m vercel_templates.mcp_server
 # or
 vercel-templates-mcp
 ```
 
-Available tools:
-- `search_templates(query, limit)` — search the catalog
-- `search_templates_semantic(query, limit)` — semantic search over embeddings
-- `get_template(slug)` — get full details for a template
-- `list_categories()` — list available categories/frameworks
+Tools exposed:
 
-Example MCP client config (Claude Desktop / Cursor):
+- `search_templates(query, limit)`
+- `search_templates_semantic(query, limit)`
+- `get_template(slug)`
+- `list_categories()`
+- `recommend_templates(stack, limit)`
+- `list_recent_templates()`
+- `list_trending_templates()`
+
+Claude Desktop / Cursor config:
 
 ```json
 {
@@ -199,19 +188,53 @@ Example MCP client config (Claude Desktop / Cursor):
 
 ### Hermes skill
 
-A Hermes skill wrapper is provided under `skills/vercel-templates/`. Copy or symlink the skill into your Hermes profile's `skills/` directory:
+A Hermes skill is provided in `skills/productivity/vercel-templates-discovery/`. Copy or symlink it into your Hermes profile's `skills/` directory.
 
 ```bash
-# Windows native Hermes example
-copy /Y skills\vercel-templates %LOCALAPPDATA%\hermes\skills\vercel-templates
-# or Hermes profile path: ~/.hermes/profiles/default/skills/vercel-templates
+# Windows native Hermes
+copy /Y skills\productivity\vercel-templates-discovery %LOCALAPPDATA%\hermes\skills\vercel-templates-discovery
+
+# WSL / Linux / macOS
+ln -s skills/productivity/vercel-templates-discovery ~/.hermes/profiles/default/skills/vercel-templates-discovery
 ```
 
-The skill exposes the same tools as the MCP server (including `search_templates_semantic`) and can be used directly by Hermes agents.
+## Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VTD_OLLAMA_URL` | `http://localhost:11434/api/embed` | Ollama embeddings endpoint |
+| `VTD_EMBEDDING_MODEL` | `nomic-embed-text-v2-moe:latest` | Embedding model name |
+
+When you change the embedding model, existing vectors are no longer semantically compatible. Re-run `vercel-templates index --reset` before querying.
+
+## Architecture
+
+```text
+vercel_templates/          # Python implementation
+├── scraper.py             # crawler + SQLite cache
+├── cli.py                 # Typer CLI
+├── server.py              # FastAPI REST server
+├── mcp_server.py          # stdio MCP server
+└── embeddings.py          # Ollama + sqlite-vec semantic search
+
+ts/                        # TypeScript / Node implementation
+├── src/
+│   ├── scraper.ts         # crawler + SQLite cache
+│   ├── cli.ts             # Commander CLI
+│   ├── mcp-server.ts      # stdio MCP server
+│   └── index.ts           # library exports
+└── tests/
+```
+
+The scraper parses Vercel's server-rendered pages and Next.js flight payloads to extract metadata, GitHub URLs, and install commands. The entire catalog can be rebuilt in under a minute.
 
 ## Project status
 
-See [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) for the roadmap, milestones, and backlog.
+See [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) for the roadmap and [CHANGELOG.md](CHANGELOG.md) for release notes. Version 1.0.0 is released and available on [PyPI](https://pypi.org/project/vercel-templates-discovery/) and [npm](https://www.npmjs.com/package/@imkxnny/vercel-templates-discovery). A Docker image is built automatically for each tag and published to GitHub Container Registry once the repository is public.
+
+## Disclaimer
+
+This is an **unofficial, community-maintained tool**. It is **not affiliated with, endorsed by, or sponsored by Vercel**. It is intended for personal research, local catalog building, and agent workflows. Please review Vercel's Terms of Service and use responsibly.
 
 ## License
 

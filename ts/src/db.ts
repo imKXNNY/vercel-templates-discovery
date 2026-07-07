@@ -207,9 +207,11 @@ export class TemplateDatabase {
   }
 
   get(slug: string): Template | undefined {
+    // Slugs may be provided with or without a leading slash.
+    const normalized = slug.startsWith("/") ? slug : `/${slug}`;
     return this.db
-      .prepare("SELECT * FROM templates WHERE slug = ?")
-      .get(slug) as Template | undefined;
+      .prepare("SELECT * FROM templates WHERE slug = ? OR slug = ?")
+      .get(slug, normalized) as Template | undefined;
   }
 
   all(limit?: number): Template[] {

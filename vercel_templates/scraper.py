@@ -408,7 +408,11 @@ class VercelTemplateScraper:
     def get(self, slug: str) -> dict[str, Any] | None:
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
-        cursor = conn.execute("SELECT * FROM templates WHERE slug = ?", (slug,))
+        # Slugs may be provided with or without a leading slash.
+        normalized = slug if slug.startswith("/") else f"/{slug}"
+        cursor = conn.execute(
+            "SELECT * FROM templates WHERE slug = ? OR slug = ?", (slug, normalized)
+        )
         row = cursor.fetchone()
         conn.close()
         return dict(row) if row else None
