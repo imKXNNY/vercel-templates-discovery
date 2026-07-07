@@ -1,84 +1,92 @@
 ---
 name: vercel-templates-discovery
-description: Use when you need to discover, search, or compare Vercel Templates for a project. Drives the local CLI, REST API, and MCP server shipped by the vercel-templates-discovery package.
-version: 1.0.0
-author: Kenny
+description: Discover, search, compare, and recommend Vercel Templates. Use when the user asks "find a Vercel template for X", "compare Vercel templates", "recommend a starter for Y", or needs to bootstrap a project from the Vercel Templates gallery.
+version: "1.0.0"
+author: imKXNNY
 license: MIT
 metadata:
-  hermes:
-    tags: [vercel, templates, discovery, scaffolding, agentic]
-    related_skills: [mcp, github]
+  compatibility:
+    - hermes
+    - claude-code
+    - cursor
+    - copilot
+    - codex
+    - openai-agents
+  tags:
+    - vercel
+    - templates
+    - discovery
+    - scaffolding
+    - agentic
+  related_skills:
+    - mcp
+    - github
 ---
 
 # Vercel Templates Discovery
 
-## Overview
+This skill helps agents find, compare, and recommend the right [Vercel Template](https://vercel.com/templates) for a user's project. It drives the local `vercel-templates` CLI, the included REST API, and the MCP server. No public Vercel API is used; the tool scrapes and caches the gallery locally into a searchable SQLite database.
 
-The `vercel-templates-discovery` project provides a local, agent-friendly catalog of Vercel Templates. It can be installed as a Python package (PyPI), an npm package, or a Docker image. It exposes:
+## When to use
 
-- A **CLI** (`vercel-templates`) for indexing, searching, and exporting templates.
-- A **REST API** (`vercel-templates serve`) for HTTP-based queries.
-- An **MCP server** (`vercel-templates-mcp`) that exposes tools to any MCP host.
-- A **nightly refreshed JSON catalog** (`catalog.json`) committed to the repo.
-
-This skill tells Hermes how to invoke those interfaces correctly.
-
-## When to Use
-
-- The user wants to find a Vercel Template for a specific framework or use case.
+- The user wants to find a Vercel Template for a specific framework, use case, or stack.
 - The user asks "what templates exist for X?", "find me a starter for Y", or "compare Vercel templates".
-- You need to bootstrap a project from a Vercel Template and need the install command.
+- You need to bootstrap a project from a Vercel Template and need the install command or GitHub URL.
 - The user wants to keep the local template index up to date.
 
-Do not use this skill when the user is asking about writing a new template from scratch or about Vercel deployment/configuration unrelated to templates.
+## Do not use
 
-## Installation Options
+- When the user is writing a new template from scratch (this skill only searches the existing gallery).
+- When the user is asking about Vercel deployment, configuration, or billing unrelated to templates.
+- As a replacement for the official Vercel Templates website when the user wants to browse visually.
 
-Choose the runtime the user already has:
+## Installation
+
+Pick the runtime the user already has installed:
 
 ```bash
-# Python (with semantic search and server extras)
+# Python (CLI + REST server + MCP server)
 pip install "vercel-templates-discovery[server,semantic]"
 
 # Node / npm
 npm install -g @imkxnny/vercel-templates-discovery
 
-# Docker (exposes REST API on port 8000)
-docker run -p 8000:8000 -v vtd-data:/data ghcr.io/imkxnnycr.io/vercel-templates-discovery:latest
+# Docker (local build; published image is built on tags)
+docker build -t vercel-templates-discovery .
 ```
 
-Note: Semantic search requires an Ollama instance reachable at `http://localhost:11434` by default. If Ollama is unavailable, the tool falls back to a fake embedding model and logs a warning.
+Semantic search requires a running Ollama instance (default: `http://localhost:11434`). If Ollama is unavailable, the Python tool errors out; the npm package falls back to a fake embedding model and logs a warning.
 
-## CLI Recipes
+## Indexing
 
-### Diff two templates
-
-```bash
-vercel-templates diff /templates/next.js/blog-a /templates/astro/blog-b
-vercel-templates diff /templates/next.js/chatbot /templates/svelte/chatbot --json
-```
-
-### Index the catalog
+Always make sure the catalog is indexed before searching or comparing. The first index takes under a minute.
 
 ```bash
 vercel-templates index
 ```
 
-Use `--reset` to drop the existing SQLite cache first:
+Reset and rebuild from scratch:
 
 ```bash
 vercel-templates index --reset
 ```
 
-### Search
+Verify the index exists:
 
-Keyword search (FTS5):
+```bash
+vercel-templates stats
+```
+
+## Search
+
+### Keyword search
 
 ```bash
 vercel-templates search "AI chatbot" --limit 10
+vercel-templates search "ecommerce" --json
 ```
 
-Semantic search (requires Ollama and an existing index):
+### Semantic search (requires Ollama)
 
 ```bash
 vercel-templates search "AI chatbot" --semantic --limit 10
@@ -88,70 +96,135 @@ vercel-templates semantic "authentication dashboard" --limit 5
 ### Show details
 
 ```bash
+vercel-templates show /templates/next.js/chatbot
 vercel-templates show /templates/next.js/chatbot --json
 ```
 
-### Export catalog
+Slugs may be provided with or without the leading `/`.
+
+### Compare two templates
+
+```bash
+vercel-templates diff /templates/next.js/chatbot /templates/astro/chatbot
+vercel-templates diff /templates/next.js/chatbot /templates/astro/chatbot --json
+```
+
+### Recommend by stack
+
+```bash
+vercel-templates recommend "next.js, ai, tailwind" --limit 5
+```
+
+### Export the catalog
 
 ```bash
 vercel-templates export --output templates.json
+vercel-templates export --output templates.json --include-readmes
 ```
 
-### Serve REST API
+## REST API
+
+Start the API server:
 
 ```bash
-vercel-templates serve --host 0.0.0.0 --port 8000
+vercel-templates serve --host 0.0.0.0 --port 8080
 ```
 
-Endpoints:
+Useful endpoints:
 
-- `GET /health` — health check
-- `GET /templates?q=<query>&limit=<n>` — keyword search
-- `GET /templates/semantic?q=<query>&limit=<n>` — semantic search
-| `GET /templates/recent` — recently added templates
-| `GET /templates/trending` — trending templates (optionally `?by_category=true`)
-| `GET /templates/recommend?stack=...` — recommend by stack/features
-| `GET /templates/{slug}` — get a template by slug
-| `GET /categories` — list categories
+| Endpoint | Description |
+|----------|-------------|
+| `GET /health` | Health check |
+| `GET /templates?q=...&limit=...` | Keyword search |
+| `GET /templates/semantic?q=...&limit=...` | Semantic search |
+| `GET /templates/recommend?stack=...` | Recommend by stack |
+| `GET /templates/{slug}` | Get one template by slug |
+| `GET /categories` | List frameworks and use cases |
 
-## MCP Server
+## MCP server
 
-Start the stdio MCP server:
+Start the stdio MCP server (blocks and speaks JSON-RPC on stdin/stdout):
 
 ```bash
 vercel-templates-mcp
 ```
 
+or
+
+```bash
+python -m vercel_templates.mcp_server
+```
+
 Available tools:
 
-| Tool | Purpose |
-|------|---------|
-| `search_templates` | Keyword search |
-| `search_templates_semantic` | Semantic search |
-| `list_recent_templates` | Templates added to the index recently |
-| `list_trending_templates` | Trending templates, optionally by category |
-| `get_template` | Get details by slug |
-| `list_categories` | List frameworks/use cases |
+- `search_templates(query, limit)` — keyword search
+- `search_templates_semantic(query, limit)` — semantic search
+- `get_template(slug)` — get details by slug
+- `list_categories()` — list frameworks and use cases
+- `recommend_templates(stack, limit)` — recommend by stack/features
+- `list_recent_templates()` — recently added templates
+- `list_trending_templates()` — trending templates
 
-## Environment Variables
+### Claude Desktop / Cursor configuration
+
+```json
+{
+  "mcpServers": {
+    "vercel-templates": {
+      "command": "vercel-templates-mcp"
+    }
+  }
+}
+```
+
+### Hermes installation
+
+Copy or symlink this skill into the Hermes profile's `skills/` directory:
+
+```bash
+# Windows native Hermes
+copy /Y skills\productivity\vercel-templates-discovery %LOCALAPPDATA%\hermes\skills\vercel-templates-discovery
+
+# WSL / Linux / macOS
+ln -s skills/productivity/vercel-templates-discovery ~/.hermes/profiles/default/skills/vercel-templates-discovery
+```
+
+## Environment variables
 
 | Variable | Default | Effect |
 |----------|---------|--------|
 | `VTD_DB_PATH` | `<module_dir>/templates.db` | SQLite cache location |
-| `OLLAMA_HOST` | `http://localhost:11434` | Ollama URL for embeddings |
-| `VTD_EMBEDDING_MODEL` | `nomic-embed-text-v2-moe:latest` | Model name for Ollama |
+| `VTD_OLLAMA_URL` | `http://localhost:11434/api/embed` | Ollama embeddings endpoint |
+| `VTD_EMBEDDING_MODEL` | `nomic-embed-text-v2-moe:latest` | Embedding model name |
 
-## Common Pitfalls
+## Output format
 
-1. **Semantic search without index** — `semantic` requires `index` to have run first. If no embeddings exist, results will be empty or fall back to keyword search depending on the caller.
-2. **Ollama not running** — The Python CLI shows a clear error; the fake embedding model in Node/TS allows the tool to work but with degraded results.
-3. **Stale index** — The catalog changes daily. Use the nightly workflow or run `vercel-templates index --reset` regularly.
-4. **Wrong slug format** — Slugs must start with `/templates/`, e.g. `/templates/next.js/chatbot`.
+Keyword search returns a JSON array of templates:
 
-## Verification Checklist
+```json
+[
+  {
+    "slug": "/templates/next.js/chatbot",
+    "title": "Chatbot",
+    "description": "A full-featured, hackable Next.js AI chatbot built by Vercel",
+    "github_url": "https://github.com/vercel/chatbot",
+    "owner": "vercel",
+    "repository": "chatbot"
+  }
+]
+```
 
-- [ ] The local index exists (`vercel-templates stats` returns a count > 0).
-- [ ] Keyword search returns relevant templates.
-- [ ] If using semantic search, Ollama is reachable.
-- [ ] MCP server responds to `tools/list` and `tools/call`.
-- [ ] REST API health endpoint returns `{"status":"ok"}`.
+## Common pitfalls
+
+1. **No index** — most commands fail with "Run `vercel-templates index` first." Always index before searching.
+2. **Semantic search without Ollama** — ensure Ollama is running and the chosen model is pulled.
+3. **Stale index** — the catalog changes daily. Use the nightly workflow or run `vercel-templates index --reset` regularly.
+4. **Wrong slug format** — slugs must contain `templates/`, e.g. `next.js/chatbot` or `/templates/next.js/chatbot`. Frameworks with dots (like `next.js`) must be preserved.
+
+## Verification checklist
+
+- [ ] `vercel-templates stats` returns a count greater than 0.
+- [ ] `vercel-templates search "<query>"` returns relevant templates.
+- [ ] If using semantic search, `curl http://localhost:11434/api/tags` responds.
+- [ ] The MCP server responds to `tools/list` with the expected tools.
+- [ ] `GET /health` on the REST API returns `{"status":"ok"}`.

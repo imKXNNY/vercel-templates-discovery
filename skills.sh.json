@@ -1,0 +1,13 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Vercel",
+      "description": "Skills for discovering, comparing, and scaffolding projects from the Vercel Templates gallery.",
+      "skills": [
+        "vercel-templates-discovery"
+      ]
+    }
+  ]
+}

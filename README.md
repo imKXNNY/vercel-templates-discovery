@@ -42,7 +42,7 @@ Example output:
 - **Compare templates** — diff two templates side by side by fields.
 - **Recommend templates** — score templates against a stack or feature set.
 - **Stay current** — nightly re-index workflow or `vercel-templates index --reset`.
-- **Plug into agents** — MCP server, REST API, and Hermes skill included.
+- **Plug into agents** — MCP server, REST API, and cross-agent skill included.
 - **Use it anywhere** — Python CLI, TypeScript CLI, local Docker build, or programmatic API.
 
 ## Installation
@@ -186,9 +186,19 @@ Claude Desktop / Cursor config:
 }
 ```
 
-### Hermes skill
+### Cross-agent skill (skills.sh)
 
-A Hermes skill is provided in `skills/productivity/vercel-templates-discovery/`. Copy or symlink it into your Hermes profile's `skills/` directory.
+A cross-agent skill is included in `skills/productivity/vercel-templates-discovery/` and is listed on [skills.sh](https://skills.sh). Install it into any compatible agent with:
+
+```bash
+npx skills add imKXNNY/vercel-templates-discovery --yes
+```
+
+Supported agents include Claude Code, Cursor, Copilot, Codex, OpenCode, and Hermes. The skill tells the agent how to invoke the CLI, REST API, and MCP server correctly.
+
+### Hermes (manual install)
+
+Copy or symlink the skill into your Hermes profile's `skills/` directory:
 
 ```bash
 # Windows native Hermes
