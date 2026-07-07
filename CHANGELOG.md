@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `vercel-templates diff` command in Python and TypeScript to compare two templates side by side.
+- Support for `--json` and `--fields` in the diff command.
+
 ## [0.2.5] - 2026-07-07
 
 ### Added

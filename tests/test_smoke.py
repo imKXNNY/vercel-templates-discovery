@@ -94,3 +94,37 @@ def test_search_after_index(scraper):
 
 def test_get_nonexistent(scraper):
     assert scraper.get("/templates/unknown") is None
+
+
+def test_diff_templates(scraper):
+    scraper._save_templates(
+        [
+            {
+                "slug": "/templates/next.js/blog-a",
+                "title": "Blog A",
+                "description": "Minimal blog",
+                "frameworks": "next.js",
+                "github_url": "https://github.com/example/blog-a",
+                "install_command": "npx create-next-app --example blog-a",
+                "readme_text": "Blog A readme",
+                "detail_url": "https://vercel.com/templates/next.js/blog-a",
+                "indexed_at": 0,
+            },
+            {
+                "slug": "/templates/next.js/blog-b",
+                "title": "Blog B",
+                "description": "Advanced blog",
+                "frameworks": "next.js",
+                "github_url": "https://github.com/example/blog-b",
+                "install_command": "npx create-next-app --example blog-b",
+                "readme_text": "Blog B readme",
+                "detail_url": "https://vercel.com/templates/next.js/blog-b",
+                "indexed_at": 0,
+            },
+        ]
+    )
+    a = scraper.get("/templates/next.js/blog-a")
+    b = scraper.get("/templates/next.js/blog-b")
+    assert a and b
+    assert a["title"] != b["title"]
+    assert a["frameworks"] == b["frameworks"]

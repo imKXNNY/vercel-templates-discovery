@@ -51,6 +51,13 @@ Note: Semantic search requires an Ollama instance reachable at `http://localhost
 
 ## CLI Recipes
 
+### Diff two templates
+
+```bash
+vercel-templates diff /templates/next.js/blog-a /templates/astro/blog-b
+vercel-templates diff /templates/next.js/chatbot /templates/svelte/chatbot --json
+```
+
 ### Index the catalog
 
 ```bash

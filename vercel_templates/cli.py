@@ -155,6 +155,56 @@ def show(
 
 
 @app.command()
+def diff(
+    slug_a: str = typer.Argument(..., help="First template slug"),
+    slug_b: str = typer.Argument(..., help="Second template slug"),
+    json_output: bool = typer.Option(False, "--json", help="Output raw JSON"),
+    fields: str = typer.Option(
+        "title,description,frameworks,use_cases,github_url,install_command,readme_text",
+        "--fields",
+        help="Comma-separated fields to compare",
+    ),
+) -> None:
+    """Compare two indexed templates side by side."""
+    scraper = VercelTemplateScraper()
+    a = scraper.get(slug_a)
+    b = scraper.get(slug_b)
+    if not a or not b:
+        missing = slug_a if not a else slug_b
+        console.print(
+            f"[red]Template {missing} not found. Run `vercel-templates index` first.[/red]"
+        )
+        raise typer.Exit(1)
+
+    selected_fields = [f.strip() for f in fields.split(",") if f.strip()]
+    comparison: dict[str, dict[str, object]] = {}
+    for field in selected_fields:
+        comparison[field] = {
+            "a": a.get(field, ""),
+            "b": b.get(field, ""),
+            "same": a.get(field, "") == b.get(field, ""),
+        }
+
+    if json_output:
+        console.print(json.dumps(comparison, indent=2, ensure_ascii=False))
+        return
+
+    table = Table(title=f"Diff: {slug_a} vs {slug_b}")
+    table.add_column("Field", style="cyan")
+    table.add_column(slug_a, style="magenta")
+    table.add_column(slug_b, style="green")
+    table.add_column("Match", style="yellow", justify="center")
+
+    for field, values in comparison.items():
+        a_val = str(values["a"])[:200]
+        b_val = str(values["b"])[:200]
+        match = "✓" if values["same"] else "✗"
+        table.add_row(field, a_val, b_val, match)
+
+    console.print(table)
+
+
+@app.command()
 def export(
     output: str = typer.Option("templates.json", "--output", "-o", help="JSON output path"),
     limit: int | None = typer.Option(None, "--limit", "-n", help="Limit number of templates"),

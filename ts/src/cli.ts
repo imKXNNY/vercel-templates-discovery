@@ -129,6 +129,52 @@ program
   });
 
 program
+  .command("diff <slug-a> <slug-b>")
+  .description("Compare two indexed templates side by side")
+  .option("-j, --json", "output as JSON")
+  .option(
+    "-f, --fields <fields>",
+    "comma-separated fields to compare",
+    "title,description,frameworks,use_cases,github_url,install_command,readme_text",
+  )
+  .option("-d, --db <path>", "path to the SQLite cache file")
+  .action(async (slugA: string, slugB: string, options) => {
+    const scraper = new VercelTemplateScraper({ dbPath: options.db });
+    try {
+      const a = scraper.get(slugA);
+      const b = scraper.get(slugB);
+      if (!a || !b) {
+        const missing = a ? slugB : slugA;
+        console.error(`Template not found: ${missing}`);
+        process.exit(1);
+      }
+      const fields = options.fields
+        .split(",")
+        .map((f: string) => f.trim())
+        .filter(Boolean);
+      const comparison: Record<string, { a: unknown; b: unknown; same: boolean }> = {};
+      for (const field of fields) {
+        const aVal = (a as unknown as Record<string, unknown>)[field] ?? "";
+        const bVal = (b as unknown as Record<string, unknown>)[field] ?? "";
+        comparison[field] = { a: aVal, b: bVal, same: aVal === bVal };
+      }
+      if (options.json) {
+        console.log(JSON.stringify(comparison, null, 2));
+      } else {
+        console.log(`Diff: ${slugA} vs ${slugB}`);
+        for (const [field, values] of Object.entries(comparison)) {
+          const marker = values.same ? "=" : "≠";
+          console.log(`${marker} ${field}`);
+          console.log(`  A: ${String(values.a).slice(0, 120)}`);
+          console.log(`  B: ${String(values.b).slice(0, 120)}`);
+        }
+      }
+    } finally {
+      scraper.close();
+    }
+  });
+
+program
   .command("stats")
   .description("Show catalog statistics")
   .option("-d, --db <path>", "path to the SQLite cache file")

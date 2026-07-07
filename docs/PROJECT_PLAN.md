@@ -66,9 +66,9 @@ Become the standard agentic discovery layer for Vercel Templates — a searchabl
 - [x] CLI `semantic` command and `search --semantic` flag
 - [x] REST `GET /templates/semantic`
 - [x] MCP `search_templates_semantic` tool
-- [ ] Template recommendation by stack / features
-- [ ] Diff / compare templates
+- [x] Diff / compare templates
 - [ ] Trending / newly added templates
+- [ ] Template recommendation by stack / features
 
 ### M6 — Publish & community (partially done)
 *Goal: make the project public and maintainable.*
@@ -82,9 +82,10 @@ Become the standard agentic discovery layer for Vercel Templates — a searchabl
 ## Backlog (next-best todos)
 
 1. **Hermes skill wrapper** — native integration into your assistant stack. [x]
-2. **CHANGELOG.md + smoke tests** — project hygiene.
-3. **Template recommendation / diff / trending** — advanced discovery features.
-4. **Benchmark multi-modal embedding models** — evaluate `embeddinggemma` and `qwen3-embedding` via Ollama for future projects that benefit from image/text embeddings.
+2. **CHANGELOG.md + smoke tests** — project hygiene. [x]
+1. **Trending / newly added templates** — M5 backlog.
+2. **Template recommendation by stack / features** — M5 backlog.
+3. **M6 ToS review + v1.0.0 release** — final public-launch blockers.
 
 ## Open questions
 
