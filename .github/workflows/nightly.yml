@@ -1,0 +1,35 @@
+name: Nightly Re-index
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  reindex:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install package
+        run: pip install -e ".[semantic]"
+      - name: Index templates
+        run: vercel-templates index --reset
+      - name: Export JSON catalog
+        run: vercel-templates export --output catalog.json
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add catalog.json
+          if git diff --cached --quiet; then
+            echo "No changes to catalog.json"
+          else
+            git commit -m "chore(catalog): nightly re-index $(date -u +%Y-%m-%d)"
+            git push
+          fi
