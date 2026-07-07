@@ -1,0 +1,32 @@
+# Global fallback owner
+* @imKXNNY
+
+# CI/CD and release automation
+.github/ @imKXNNY
+.github/workflows/ @imKXNNY
+
+# Package manifests and lock files — critical for supply chain security
+pyproject.toml @imKXNNY
+uv.lock @imKXNNY
+package.json @imKXNNY
+package-lock.json @imKXNNY
+pnpm-lock.yaml @imKXNNY
+yarn.lock @imKXNNY
+tsconfig.json @imKXNNY
+
+# Core source code
+src/ @imKXNNY
+vercel_templates/ @imKXNNY
+vercel_templates/**/*.py @imKXNNY
+ts/ @imKXNNY
+ts/**/*.ts @imKXNNY
+
+# Skill definition and registry metadata
+skills/ @imKXNNY
+skills.sh.json @imKXNNY
+AGENTS.md @imKXNNY
+
+# Docs and legal
+docs/ @imKXNNY
+LICENSE @imKXNNY
+README.md @imKXNNY
