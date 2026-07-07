@@ -7,7 +7,7 @@ const program = new Command();
 program
   .name("vercel-templates")
   .description("Agentic discovery for Vercel Templates")
-  .version("0.2.3");
+  .version("0.2.5");
 
 function parseConcurrency(raw: string | undefined): number {
   const n = raw === undefined ? 8 : Number(raw);

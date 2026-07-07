@@ -87,7 +87,7 @@ export class MCPServer {
             capabilities: { tools: {} },
             serverInfo: {
               name: "vercel-templates-discovery",
-              version: "0.2.4",
+              version: "0.2.5",
             },
           },
         };
