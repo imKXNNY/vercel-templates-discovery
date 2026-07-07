@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - REST endpoints `/templates/recent` and `/templates/trending`.
 - MCP tools `list_recent_templates` and `list_trending_templates`.
 - `--by-category` grouping for trending output.
+- `vercel-templates recommend <stack>` command in Python and TypeScript.
+- Scoring based on frameworks, use cases, databases, CSS, authentication, CMS, title, and description.
+- `--require-all-frameworks` flag for strict framework matching.
+- REST endpoint `/templates/recommend?stack=...`.
+- MCP tool `recommend_templates`.
 
 ## [0.2.5] - 2026-07-07
 

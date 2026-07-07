@@ -158,6 +158,19 @@ export class MCPServer {
                 },
               },
               {
+                name: "recommend_templates",
+                description: "Recommend templates based on a desired stack or feature set",
+                inputSchema: {
+                  type: "object",
+                  properties: {
+                    stack: { type: "string" },
+                    limit: { type: "integer" },
+                    require_all_frameworks: { type: "boolean" },
+                  },
+                  required: ["stack"],
+                },
+              },
+              {
                 name: "list_categories",
                 description: "List template categories/frameworks",
                 inputSchema: {
@@ -231,6 +244,24 @@ export class MCPServer {
           const limit = Number(args.limit || 10);
           const byCategory = Boolean(args.by_category);
           const results = this.scraper.trending(hours, limit, byCategory);
+          return {
+            jsonrpc: "2.0",
+            id,
+            result: {
+              content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
+            },
+          };
+        }
+
+        if (name === "recommend_templates") {
+          const stack = String(args.stack || "");
+          const limit = Number(args.limit || 10);
+          const requireAllFrameworks = Boolean(args.require_all_frameworks);
+          const stackList = stack.split(",").map((s) => s.trim()).filter(Boolean);
+          const results = this.scraper.recommend(stackList, {
+            limit,
+            requireAllFrameworks,
+          });
           return {
             jsonrpc: "2.0",
             id,

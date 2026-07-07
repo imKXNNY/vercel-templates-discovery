@@ -461,6 +461,106 @@ class VercelTemplateScraper:
 
         return {"grouped": grouped, "total": len(recent), "hours": hours}
 
+    def recommend(
+        self,
+        stack: list[str],
+        *,
+        limit: int = 10,
+        require_all_frameworks: bool = False,
+    ) -> list[dict[str, Any]]:
+        """Recommend templates based on a target stack / feature set.
+
+        Args:
+            stack: List of desired frameworks, technologies, or use cases.
+            limit: Maximum number of recommendations to return.
+            require_all_frameworks: If True, only return templates that match all
+                framework-related stack terms.
+        """
+        if not stack:
+            return []
+
+        normalized_stack = [s.strip().lower() for s in stack if s.strip()]
+        if not normalized_stack:
+            return []
+
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        rows = [dict(row) for row in conn.execute("SELECT * FROM templates").fetchall()]
+        conn.close()
+
+        scored: list[tuple[float, dict[str, Any]]] = []
+        for t in rows:
+            score, matches = self._score_template(t, normalized_stack)
+            if score <= 0:
+                continue
+            if require_all_frameworks and not self._matches_all_frameworks(t, normalized_stack):
+                continue
+            t = dict(t)
+            t["recommend_score"] = round(score, 4)
+            t["recommend_matches"] = sorted(matches)
+            scored.append((score, t))
+
+        scored.sort(key=lambda x: x[0], reverse=True)
+        return [t for _, t in scored[:limit]]
+
+    def _score_template(self, t: dict[str, Any], stack: list[str]) -> tuple[float, set[str]]:
+        """Score a template against the desired stack."""
+        matches: set[str] = set()
+        weights = {
+            "frameworks": 2.0,
+            "use_cases": 1.5,
+            "databases": 1.0,
+            "css": 0.8,
+            "authentication": 1.2,
+            "cms": 1.0,
+            "title": 1.0,
+            "description": 0.5,
+        }
+        score = 0.0
+        for field, weight in weights.items():
+            value = str(t.get(field, "")).lower()
+            if not value:
+                continue
+            for term in stack:
+                if term in value:
+                    score += weight
+                    matches.add(term)
+        return score, matches
+
+    def _matches_all_frameworks(self, t: dict[str, Any], stack: list[str]) -> bool:
+        """Check if all framework-related terms in stack are present."""
+        frameworks = str(t.get("frameworks", "")).lower()
+        framework_terms = [term for term in stack if self._is_framework_term(term)]
+        if not framework_terms:
+            return True
+        return all(term in frameworks for term in framework_terms)
+
+    def _is_framework_term(self, term: str) -> bool:
+        """Heuristic: common framework names."""
+        frameworks = {
+            "next.js",
+            "nuxt",
+            "svelte",
+            "astro",
+            "hono",
+            "express",
+            "flask",
+            "remix",
+            "vue",
+            "angular",
+            "react",
+            "solid",
+            "qwik",
+            "django",
+            "fastapi",
+            "rails",
+            "laravel",
+            "spring",
+            "sveltekit",
+            "gatsby",
+        }
+        return term in frameworks
+
 
 def _unescape(text: str) -> str:
     return html.unescape(text)

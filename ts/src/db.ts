@@ -256,6 +256,72 @@ export class TemplateDatabase {
     return { grouped, total: recent.length, hours };
   }
 
+  recommend(
+    stack: string[],
+    { limit = 10, requireAllFrameworks = false }: { limit?: number; requireAllFrameworks?: boolean } = {},
+  ): Array<Template & { recommend_score: number; recommend_matches: string[] }> {
+    if (!stack.length) return [];
+    const normalizedStack = stack.map((s) => s.trim().toLowerCase()).filter(Boolean);
+    if (!normalizedStack.length) return [];
+
+    const rows = this.all();
+    const scored: Array<{ score: number; matches: Set<string>; template: Template }> = [];
+    for (const t of rows) {
+      const { score, matches } = this.scoreTemplate(t, normalizedStack);
+      if (score <= 0) continue;
+      if (requireAllFrameworks && !this.matchesAllFrameworks(t, normalizedStack)) continue;
+      scored.push({ score, matches, template: t });
+    }
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, limit).map(({ score, matches, template }) => ({
+      ...template,
+      recommend_score: Math.round(score * 10000) / 10000,
+      recommend_matches: Array.from(matches).sort(),
+    }));
+  }
+
+  private scoreTemplate(t: Template, stack: string[]): { score: number; matches: Set<string> } {
+    const matches = new Set<string>();
+    const weights: Record<string, number> = {
+      frameworks: 2.0,
+      use_cases: 1.5,
+      databases: 1.0,
+      css: 0.8,
+      authentication: 1.2,
+      cms: 1.0,
+      title: 1.0,
+      description: 0.5,
+    };
+    let score = 0;
+    for (const [field, weight] of Object.entries(weights)) {
+      const value = String((t as unknown as Record<string, unknown>)[field] ?? "").toLowerCase();
+      if (!value) continue;
+      for (const term of stack) {
+        if (value.includes(term)) {
+          score += weight;
+          matches.add(term);
+        }
+      }
+    }
+    return { score, matches };
+  }
+
+  private matchesAllFrameworks(t: Template, stack: string[]): boolean {
+    const frameworks = (t.frameworks || "").toLowerCase();
+    const frameworkTerms = stack.filter((term) => this.isFrameworkTerm(term));
+    if (!frameworkTerms.length) return true;
+    return frameworkTerms.every((term) => frameworks.includes(term));
+  }
+
+  private isFrameworkTerm(term: string): boolean {
+    const frameworks = new Set([
+      "next.js", "nuxt", "svelte", "astro", "hono", "express", "flask",
+      "remix", "vue", "angular", "react", "solid", "qwik", "django",
+      "fastapi", "rails", "laravel", "spring", "sveltekit", "gatsby",
+    ]);
+    return frameworks.has(term);
+  }
+
   close() {
     this.db.close();
   }

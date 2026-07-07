@@ -191,3 +191,49 @@ def test_trending_by_category(scraper):
     assert "astro" in grouped
     assert len(grouped["next.js"]) == 1
     assert grouped["next.js"][0]["slug"] == "/templates/next.js/n1"
+
+
+def test_recommend_by_stack(scraper):
+    scraper._save_templates(
+        [
+            {
+                "slug": "/templates/next.js/blog",
+                "title": "Next.js Blog",
+                "frameworks": "next.js",
+                "framework": "next.js",
+                "use_cases": "blog",
+                "databases": "postgres",
+                "indexed_at": 0,
+                "detail_url": "",
+            },
+            {
+                "slug": "/templates/astro/portfolio",
+                "title": "Astro Portfolio",
+                "frameworks": "astro",
+                "framework": "astro",
+                "use_cases": "portfolio",
+                "indexed_at": 0,
+                "detail_url": "",
+            },
+            {
+                "slug": "/templates/next.js/ecommerce",
+                "title": "Next.js E-commerce",
+                "frameworks": "next.js",
+                "framework": "next.js",
+                "use_cases": "ecommerce",
+                "authentication": "auth0",
+                "indexed_at": 0,
+                "detail_url": "",
+            },
+        ]
+    )
+    results = scraper.recommend(["next.js", "auth"], limit=10)
+    assert len(results) >= 2
+    top = results[0]
+    assert top["slug"] == "/templates/next.js/ecommerce"
+    assert "next.js" in top["recommend_matches"]
+    assert "auth" in top["recommend_matches"]
+
+
+def test_get_nonexistent(scraper):
+    assert scraper.get("/templates/unknown") is None

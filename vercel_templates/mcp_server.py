@@ -139,6 +139,22 @@ class MCPServer:
                     },
                 },
             },
+            {
+                "name": "recommend_templates",
+                "description": "Recommend templates based on a desired stack or feature set.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "stack": {
+                            "type": "string",
+                            "description": "Comma-separated desired stack/features, e.g. 'next.js,prisma,auth'",
+                        },
+                        "limit": {"type": "integer", "default": 10},
+                        "require_all_frameworks": {"type": "boolean", "default": False},
+                    },
+                    "required": ["stack"],
+                },
+            },
         ]
 
     def _handle_tool_call(self, msg_id: Any, params: dict[str, Any]) -> None:
@@ -180,6 +196,17 @@ class MCPServer:
                 limit = arguments.get("limit", 10)
                 by_category = arguments.get("by_category", False)
                 results = self.scraper.trending(hours=hours, limit=limit, by_category=by_category)
+                self._send_tool_response(msg_id, results)
+            elif name == "recommend_templates":
+                stack = arguments.get("stack", "")
+                limit = arguments.get("limit", 10)
+                require_all_frameworks = arguments.get("require_all_frameworks", False)
+                stack_list = [s.strip() for s in stack.split(",") if s.strip()]
+                results = self.scraper.recommend(
+                    stack_list,
+                    limit=limit,
+                    require_all_frameworks=require_all_frameworks,
+                )
                 self._send_tool_response(msg_id, results)
             else:
                 self._send_error(msg_id, -32602, f"Tool not found: {name}")

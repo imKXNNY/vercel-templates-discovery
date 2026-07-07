@@ -110,6 +110,7 @@ Endpoints:
 - `GET /templates/semantic?q=<query>&limit=<n>` — semantic search
 | `GET /templates/recent` — recently added templates
 | `GET /templates/trending` — trending templates (optionally `?by_category=true`)
+| `GET /templates/recommend?stack=...` — recommend by stack/features
 | `GET /templates/{slug}` — get a template by slug
 | `GET /categories` — list categories
 

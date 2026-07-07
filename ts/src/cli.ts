@@ -249,4 +249,38 @@ program
     }
   });
 
+program
+  .command("recommend <stack>")
+  .description("Recommend templates based on a target stack or feature set")
+  .option("-l, --limit <n>", "max results", "10")
+  .option("--require-all-frameworks", "require all framework terms to match")
+  .option("-j, --json", "output as JSON")
+  .option("-d, --db <path>", "path to the SQLite cache file")
+  .action(async (stack: string, options) => {
+    const scraper = new VercelTemplateScraper({ dbPath: options.db });
+    try {
+      const stackList = stack.split(",").map((s) => s.trim()).filter(Boolean);
+      if (!stackList.length) {
+        console.error("Provide at least one stack term.");
+        process.exit(1);
+      }
+      const rows = scraper.recommend(stackList, {
+        limit: Number(options.limit),
+        requireAllFrameworks: options.requireAllFrameworks,
+      });
+      if (options.json) {
+        console.log(JSON.stringify(rows, null, 2));
+      } else {
+        console.log(`Recommended templates for: ${stack}`);
+        for (const t of rows as Array<{ title: string; slug: string; frameworks: string; recommend_score: number; recommend_matches: string[] }>) {
+          console.log(
+            `${t.title} — ${t.slug} (${t.frameworks}) score: ${t.recommend_score.toFixed(4)} matches: ${t.recommend_matches.join(", ")}`,
+          );
+        }
+      }
+    } finally {
+      scraper.close();
+    }
+  });
+
 program.parse();

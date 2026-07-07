@@ -321,6 +321,49 @@ def trending(
 
 
 @app.command()
+def recommend(
+    stack: str = typer.Argument(
+        ..., help="Comma-separated desired stack/features, e.g. 'next.js,prisma,auth'"
+    ),
+    limit: int = typer.Option(10, "--limit", "-n", help="Max results"),
+    require_all_frameworks: bool = typer.Option(
+        False, "--require-all-frameworks", help="Require all framework terms to match"
+    ),
+    json_output: bool = typer.Option(False, "--json", help="Output raw JSON"),
+) -> None:
+    """Recommend templates based on a target stack or feature set."""
+    scraper = VercelTemplateScraper()
+    stack_list = [s.strip() for s in stack.split(",") if s.strip()]
+    if not stack_list:
+        console.print("[red]Provide at least one stack term.[/red]")
+        raise typer.Exit(1)
+    results = scraper.recommend(
+        stack_list, limit=limit, require_all_frameworks=require_all_frameworks
+    )
+    if json_output:
+        console.print(json.dumps(results, indent=2, ensure_ascii=False))
+        return
+    if not results:
+        console.print("[yellow]No recommendations found.[/yellow]")
+        return
+    table = Table(title=f"Recommended templates for: {stack}")
+    table.add_column("Title", style="cyan")
+    table.add_column("Slug", style="magenta")
+    table.add_column("Framework", style="green")
+    table.add_column("Score", style="yellow", justify="right")
+    table.add_column("Matches", style="white")
+    for t in results:
+        table.add_row(
+            t.get("title", ""),
+            t.get("slug", ""),
+            t.get("frameworks", ""),
+            str(t.get("recommend_score", "")),
+            ", ".join(t.get("recommend_matches", [])),
+        )
+    console.print(table)
+
+
+@app.command()
 def serve(
     host: str = typer.Option("127.0.0.1", "--host", "-h", help="Bind host"),
     port: int = typer.Option(8000, "--port", "-p", help="Bind port"),

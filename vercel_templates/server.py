@@ -102,3 +102,18 @@ def list_trending(
     by_category: bool = False,
 ) -> dict[str, Any]:
     return scraper.trending(hours=hours, limit=limit, by_category=by_category)
+
+
+@app.get("/templates/recommend")
+def recommend_templates(
+    scraper: Annotated[VercelTemplateScraper, Depends(get_scraper)],
+    stack: str,
+    limit: int = 10,
+    require_all_frameworks: bool = False,
+) -> list[dict[str, Any]]:
+    stack_list = [s.strip() for s in stack.split(",") if s.strip()]
+    return scraper.recommend(
+        stack_list,
+        limit=limit,
+        require_all_frameworks=require_all_frameworks,
+    )

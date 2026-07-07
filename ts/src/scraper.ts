@@ -305,6 +305,13 @@ export class VercelTemplateScraper {
     return this.db.trending(hours, limit, byCategory);
   }
 
+  recommend(
+    stack: string[],
+    options: { limit?: number; requireAllFrameworks?: boolean } = {},
+  ): ReturnType<TemplateDatabase["recommend"]> {
+    return this.db.recommend(stack, options);
+  }
+
   close() {
     this.db.close();
   }
