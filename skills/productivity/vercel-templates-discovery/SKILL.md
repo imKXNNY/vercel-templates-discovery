@@ -27,6 +27,29 @@ metadata:
 
 This skill helps agents find, compare, and recommend the right [Vercel Template](https://vercel.com/templates) for a user's project. It drives the local `vercel-templates` CLI, the included REST API, and the MCP server. No public Vercel API is used; the tool scrapes and caches the gallery locally into a searchable SQLite database.
 
+## Before you use this skill
+
+The skill does **not** search Vercel live. It requires the `vercel-templates-discovery` CLI or package to be installed on the user's machine and a local index to be built first. If the user has not installed anything yet, install it first:
+
+```bash
+# Option A: Python CLI (recommended for Python projects or agents)
+pip install vercel-templates-discovery
+
+# Option B: Node CLI (recommended for Node.js projects or agents)
+npm install -g @imkxnny/vercel-templates-discovery
+
+# Option C: Docker (no runtime dependencies)
+docker build -t vercel-templates-discovery https://github.com/imKXNNY/vercel-templates-discovery.git
+```
+
+After installing, build the local catalog:
+
+```bash
+vercel-templates index
+```
+
+If `vercel-templates index` is not available, the package is not installed correctly or not on `PATH`. Agents should report the installation status to the user and ask which runtime they prefer (Python / Node / Docker) instead of attempting to search an empty catalog.
+
 ## When to use
 
 - The user wants to find a Vercel Template for a specific framework, use case, or stack.
