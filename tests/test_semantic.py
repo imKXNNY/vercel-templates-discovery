@@ -43,6 +43,16 @@ def test_fake_embeddings_are_detinistic_for_same_text():
 
 def test_ollama_model_returns_normalized_768_vectors():
     pytest.importorskip("requests")
+    try:
+        import requests
+
+        requests.post(
+            "http://localhost:11434/api/embed",
+            json={"model": "nomic-embed-text-v2-moe:latest", "input": ["hello"]},
+            timeout=2,
+        )
+    except requests.exceptions.ConnectionError:
+        pytest.skip("Ollama not available at localhost:11434")
     model = OllamaEmbeddingModel()
     vec = model.encode_single("hello world")
     assert vec.shape == (768,)

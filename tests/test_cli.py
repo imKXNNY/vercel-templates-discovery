@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 
@@ -17,6 +18,7 @@ def test_search_semantic_flag_help():
         [sys.executable, "-m", "vercel_templates.cli", "search", "--help"],
         capture_output=True,
         text=True,
+        env={**os.environ, "NO_COLOR": "1", "TERM": "dumb"},
     )
     assert result.returncode == 0
     assert "--semantic" in result.stdout
