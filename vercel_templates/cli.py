@@ -209,7 +209,11 @@ def diff(
 def export(
     output: str = typer.Option("templates.json", "--output", "-o", help="JSON output path"),
     limit: int | None = typer.Option(None, "--limit", "-n", help="Limit number of templates"),
-    include_readmes: bool = typer.Option(False, "--include-readmes", help="Include full README text in export (may raise copyright concerns)"),
+    include_readmes: bool = typer.Option(
+        False,
+        "--include-readmes",
+        help="Include full README text in export (may raise copyright concerns)",
+    ),
 ) -> None:
     """Export the indexed templates to JSON."""
     scraper = VercelTemplateScraper()
