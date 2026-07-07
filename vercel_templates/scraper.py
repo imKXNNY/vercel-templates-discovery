@@ -24,6 +24,7 @@ class VercelTemplateScraper:
         delay: float = 0.5,
         max_workers: int = 8,
         embedding_model: EmbeddingModel | None = None,
+        db_path: str | None = None,
     ):
         self.session = requests.Session()
         self.session.headers.update(
@@ -35,7 +36,7 @@ class VercelTemplateScraper:
         )
         self.delay = delay
         self.max_workers = max_workers
-        self.db_path = cache_db_path()
+        self.db_path = db_path if db_path is not None else str(cache_db_path())
         self.embedding_model = embedding_model
         self._sqlite_vec_loaded: bool | None = None
         self._init_db()
