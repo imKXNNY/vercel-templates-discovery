@@ -8,6 +8,10 @@ permissions:
   contents: write
   id-token: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   python:
     runs-on: ubuntu-latest
@@ -23,6 +27,12 @@ jobs:
         run: python -m pip install --upgrade build
       - name: Build wheel/sdist
         run: python -m build
+      - name: Check version
+        id: version
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Publishing version $VERSION"
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
 
@@ -34,9 +44,21 @@ jobs:
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
+      - name: Read package version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./ts/package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Publishing version $VERSION"
       - name: Build TypeScript
         run: cd ts && npm ci && npm run build
-      - name: Publish to npm
-        run: cd ts && npm publish --access public
+      - name: Publish to npm (if not already published)
+        run: |
+          cd ts
+          if npm view @imkxnny/vercel-templates-discovery@${{ steps.version.outputs.version }} version >/dev/null 2>&1; then
+            echo "Version ${{ steps.version.outputs.version }} already published. Skipping."
+            exit 0
+          fi
+          npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
