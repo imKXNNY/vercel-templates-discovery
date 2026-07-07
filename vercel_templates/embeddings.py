@@ -6,8 +6,11 @@ import re
 from typing import Any, Protocol
 
 import numpy as np
+from numpy.typing import NDArray
 
 logger = logging.getLogger(__name__)
+
+Array = NDArray[np.float32]
 
 _OLLAMA_URL = os.getenv("VTD_OLLAMA_URL", "http://localhost:11434/api/embed")
 _MODEL_NAME = os.getenv("VTD_EMBEDDING_MODEL", "nomic-embed-text-v2-moe:latest")
@@ -20,11 +23,11 @@ class EmbeddingModel(Protocol):
     model_name: str
     dimensions: int
 
-    def encode(self, texts: list[str]) -> np.ndarray:
+    def encode(self, texts: list[str]) -> Array:
         """Encode a list of texts into a 2-D float32 array."""
         ...
 
-    def encode_single(self, text: str) -> np.ndarray:
+    def encode_single(self, text: str) -> Array:
         """Encode a single text into a 1-D float32 array."""
         ...
 
@@ -44,7 +47,7 @@ class OllamaEmbeddingModel:
         self.ollama_url = ollama_url
         self.timeout = timeout
 
-    def encode(self, texts: list[str]) -> np.ndarray:
+    def encode(self, texts: list[str]) -> Array:
         import requests
 
         try:
@@ -68,7 +71,7 @@ class OllamaEmbeddingModel:
             self.dimensions = vectors.shape[1]
         return vectors
 
-    def encode_single(self, text: str) -> np.ndarray:
+    def encode_single(self, text: str) -> Array:
         result = self.encode([text])
         return np.asarray(result[0], dtype=np.float32)
 
@@ -86,7 +89,7 @@ class FakeEmbeddingModel:
         self.model_name = "fake"
         self.dimensions = dimensions
 
-    def _vector_for(self, text: str) -> np.ndarray:
+    def _vector_for(self, text: str) -> Array:
         vec = np.zeros(self.dimensions, dtype=np.float32)
         tokens = re.findall(r"\w+", text.lower())
         for token in tokens:
@@ -99,10 +102,10 @@ class FakeEmbeddingModel:
         vec /= np.linalg.norm(vec)
         return vec
 
-    def encode(self, texts: list[str]) -> np.ndarray:
+    def encode(self, texts: list[str]) -> Array:
         return np.array([self._vector_for(t) for t in texts], dtype=np.float32)
 
-    def encode_single(self, text: str) -> np.ndarray:
+    def encode_single(self, text: str) -> Array:
         return self._vector_for(text)
 
 
@@ -116,7 +119,7 @@ class SentenceTransformersEmbeddingModel:
         self._model = SentenceTransformer(self.model_name, device="cpu")
         self.dimensions = self._model.get_sentence_embedding_dimension()
 
-    def encode(self, texts: list[str]) -> np.ndarray:
+    def encode(self, texts: list[str]) -> Array:
         embeddings = self._model.encode(
             texts,
             convert_to_numpy=True,
@@ -124,7 +127,7 @@ class SentenceTransformersEmbeddingModel:
         )
         return np.asarray(embeddings, dtype=np.float32)
 
-    def encode_single(self, text: str) -> np.ndarray:
+    def encode_single(self, text: str) -> Array:
         result = self.encode([text])
         return np.asarray(result[0], dtype=np.float32)
 
@@ -170,7 +173,7 @@ def embedding_text(template: dict[str, Any]) -> str:
     return " ".join(p for p in parts if p).strip()
 
 
-def normalize(vectors: np.ndarray) -> np.ndarray:
+def normalize(vectors: Array) -> Array:
     """L2-normalize vectors along the last axis."""
     result = vectors.astype(np.float32)
     norms = np.linalg.norm(result, axis=1, keepdims=True)
