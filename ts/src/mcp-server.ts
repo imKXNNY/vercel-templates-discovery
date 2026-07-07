@@ -135,6 +135,29 @@ export class MCPServer {
                 },
               },
               {
+                name: "list_recent_templates",
+                description: "List templates recently added to the index",
+                inputSchema: {
+                  type: "object",
+                  properties: {
+                    hours: { type: "integer" },
+                    limit: { type: "integer" },
+                  },
+                },
+              },
+              {
+                name: "list_trending_templates",
+                description: "List trending templates grouped by category or as a flat list",
+                inputSchema: {
+                  type: "object",
+                  properties: {
+                    hours: { type: "integer" },
+                    limit: { type: "integer" },
+                    by_category: { type: "boolean" },
+                  },
+                },
+              },
+              {
                 name: "list_categories",
                 description: "List template categories/frameworks",
                 inputSchema: {
@@ -181,6 +204,33 @@ export class MCPServer {
           const limit = Number(args.limit || 10);
           this.scraper.embeddingModel = await this.modelPromise;
           const results = await this.scraper.semanticSearch(query, limit);
+          return {
+            jsonrpc: "2.0",
+            id,
+            result: {
+              content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
+            },
+          };
+        }
+
+        if (name === "list_recent_templates") {
+          const hours = Number(args.hours || 24);
+          const limit = Number(args.limit || 10);
+          const results = this.scraper.recentlyAdded(hours, limit);
+          return {
+            jsonrpc: "2.0",
+            id,
+            result: {
+              content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
+            },
+          };
+        }
+
+        if (name === "list_trending_templates") {
+          const hours = Number(args.hours || 168);
+          const limit = Number(args.limit || 10);
+          const byCategory = Boolean(args.by_category);
+          const results = this.scraper.trending(hours, limit, byCategory);
           return {
             jsonrpc: "2.0",
             id,

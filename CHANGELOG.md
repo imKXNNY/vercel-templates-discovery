@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `vercel-templates diff` command in Python and TypeScript to compare two templates side by side.
 - Support for `--json` and `--fields` in the diff command.
+- `vercel-templates recent` and `vercel-templates trending` commands in Python and TypeScript.
+- REST endpoints `/templates/recent` and `/templates/trending`.
+- MCP tools `list_recent_templates` and `list_trending_templates`.
+- `--by-category` grouping for trending output.
 
 ## [0.2.5] - 2026-07-07
 

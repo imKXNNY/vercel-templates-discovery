@@ -227,6 +227,35 @@ export class TemplateDatabase {
     return row.n;
   }
 
+  recentlyAdded(hours = 24, limit?: number): Template[] {
+    const since = Math.floor(Date.now() / 1000) - hours * 3600;
+    let sql = "SELECT * FROM templates WHERE indexed_at >= ? ORDER BY indexed_at DESC";
+    if (limit) {
+      return this.db.prepare(`${sql} LIMIT ?`).all(since, limit) as Template[];
+    }
+    return this.db.prepare(sql).all(since) as Template[];
+  }
+
+  trending(hours = 168, limit = 10, byCategory = false): { templates: Template[]; total: number; hours: number } | { grouped: Record<string, Template[]>; total: number; hours: number } {
+    const recent = this.recentlyAdded(hours);
+    if (!byCategory) {
+      return { templates: recent.slice(0, limit), total: recent.length, hours };
+    }
+    const grouped: Record<string, Template[]> = {};
+    for (const t of recent) {
+      const category = t.frameworks || "uncategorized";
+      for (const cat of category.split(",").map((c) => c.trim()).filter(Boolean)) {
+        const key = cat || "uncategorized";
+        grouped[key] = grouped[key] || [];
+        grouped[key].push(t);
+      }
+    }
+    for (const key of Object.keys(grouped)) {
+      grouped[key] = grouped[key].slice(0, limit);
+    }
+    return { grouped, total: recent.length, hours };
+  }
+
   close() {
     this.db.close();
   }

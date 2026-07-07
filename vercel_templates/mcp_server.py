@@ -108,6 +108,37 @@ class MCPServer:
                     "required": ["query"],
                 },
             },
+            {
+                "name": "list_recent_templates",
+                "description": "List templates that were recently added to the index.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "hours": {
+                            "type": "integer",
+                            "default": 24,
+                            "description": "How many hours back to look",
+                        },
+                        "limit": {"type": "integer", "default": 10},
+                    },
+                },
+            },
+            {
+                "name": "list_trending_templates",
+                "description": "List trending templates grouped by category or as a flat list.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "hours": {
+                            "type": "integer",
+                            "default": 168,
+                            "description": "How many hours back to look",
+                        },
+                        "limit": {"type": "integer", "default": 10},
+                        "by_category": {"type": "boolean", "default": False},
+                    },
+                },
+            },
         ]
 
     def _handle_tool_call(self, msg_id: Any, params: dict[str, Any]) -> None:
@@ -117,7 +148,7 @@ class MCPServer:
             if name == "search_templates":
                 query = arguments.get("query", "")
                 limit = arguments.get("limit", 10)
-                results = self.scraper.search(query, limit=limit)
+                results: Any = self.scraper.search(query, limit=limit)
                 self._send_tool_response(msg_id, results)
             elif name == "get_template":
                 slug = arguments.get("slug", "")
@@ -138,6 +169,17 @@ class MCPServer:
                 query = arguments.get("query", "")
                 limit = arguments.get("limit", 10)
                 results = self.scraper.semantic_search(query, limit=limit)
+                self._send_tool_response(msg_id, results)
+            elif name == "list_recent_templates":
+                hours = arguments.get("hours", 24)
+                limit = arguments.get("limit", 10)
+                results = self.scraper.recently_added(hours=hours, limit=limit)
+                self._send_tool_response(msg_id, results)
+            elif name == "list_trending_templates":
+                hours = arguments.get("hours", 168)
+                limit = arguments.get("limit", 10)
+                by_category = arguments.get("by_category", False)
+                results = self.scraper.trending(hours=hours, limit=limit, by_category=by_category)
                 self._send_tool_response(msg_id, results)
             else:
                 self._send_error(msg_id, -32602, f"Tool not found: {name}")

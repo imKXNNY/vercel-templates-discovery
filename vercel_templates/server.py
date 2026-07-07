@@ -83,3 +83,22 @@ def list_categories(
             if uc:
                 categories.add(uc)
     return sorted(categories)
+
+
+@app.get("/templates/recent")
+def list_recent(
+    scraper: Annotated[VercelTemplateScraper, Depends(get_scraper)],
+    hours: int = 24,
+    limit: int = 10,
+) -> list[dict[str, Any]]:
+    return scraper.recently_added(hours=hours, limit=limit)
+
+
+@app.get("/templates/trending")
+def list_trending(
+    scraper: Annotated[VercelTemplateScraper, Depends(get_scraper)],
+    hours: int = 168,
+    limit: int = 10,
+    by_category: bool = False,
+) -> dict[str, Any]:
+    return scraper.trending(hours=hours, limit=limit, by_category=by_category)

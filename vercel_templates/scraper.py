@@ -426,6 +426,41 @@ class VercelTemplateScraper:
         conn.close()
         return rows
 
+    def recently_added(self, hours: int = 24, limit: int | None = None) -> list[dict[str, Any]]:
+        """Return templates indexed within the last N hours."""
+        since = int(time.time()) - (hours * 3600)
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        sql = "SELECT * FROM templates WHERE indexed_at >= ? ORDER BY indexed_at DESC"
+        params: tuple[Any, ...] = (since,)
+        if limit:
+            sql += " LIMIT ?"
+            params = (since, limit)
+        cursor = conn.execute(sql, params)
+        rows = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return rows
+
+    def trending(
+        self, hours: int = 168, limit: int = 10, by_category: bool = False
+    ) -> dict[str, Any]:
+        """Return recently added templates, optionally grouped by category."""
+        recent = self.recently_added(hours=hours, limit=None)
+        if not by_category:
+            return {"templates": recent[:limit], "total": len(recent), "hours": hours}
+
+        grouped: dict[str, list[dict[str, Any]]] = {}
+        for t in recent:
+            category = t.get("frameworks", "uncategorized") or "uncategorized"
+            for cat in category.split(", "):
+                cat = cat.strip() or "uncategorized"
+                grouped.setdefault(cat, []).append(t)
+
+        for cat in grouped:
+            grouped[cat] = grouped[cat][:limit]
+
+        return {"grouped": grouped, "total": len(recent), "hours": hours}
+
 
 def _unescape(text: str) -> str:
     return html.unescape(text)

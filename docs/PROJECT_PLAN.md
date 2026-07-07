@@ -67,7 +67,7 @@ Become the standard agentic discovery layer for Vercel Templates — a searchabl
 - [x] REST `GET /templates/semantic`
 - [x] MCP `search_templates_semantic` tool
 - [x] Diff / compare templates
-- [ ] Trending / newly added templates
+- [x] Trending / newly added templates
 - [ ] Template recommendation by stack / features
 
 ### M6 — Publish & community (partially done)

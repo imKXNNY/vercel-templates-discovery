@@ -188,4 +188,65 @@ program
     }
   });
 
+program
+  .command("recent")
+  .description("Show templates added to the index recently")
+  .option("-h, --hours <n>", "how many hours back to look", "24")
+  .option("-l, --limit <n>", "max results", "10")
+  .option("-j, --json", "output as JSON")
+  .option("-d, --db <path>", "path to the SQLite cache file")
+  .action(async (options) => {
+    const scraper = new VercelTemplateScraper({ dbPath: options.db });
+    try {
+      const rows = scraper.recentlyAdded(Number(options.hours), Number(options.limit));
+      if (options.json) {
+        console.log(JSON.stringify(rows, null, 2));
+      } else {
+        console.log(`Templates indexed in the last ${options.hours} hours:`);
+        for (const t of rows as Array<{ title: string; slug: string; frameworks: string; indexed_at: number }>) {
+          const dt = new Date(t.indexed_at * 1000).toISOString().slice(0, 16).replace("T", " ");
+          console.log(`${t.title} — ${t.slug} (${t.frameworks}) at ${dt}`);
+        }
+      }
+    } finally {
+      scraper.close();
+    }
+  });
+
+program
+  .command("trending")
+  .description("Show trending (recently added) templates")
+  .option("-h, --hours <n>", "how many hours back to look", "168")
+  .option("-l, --limit <n>", "max results per category", "10")
+  .option("--by-category", "group results by category")
+  .option("-j, --json", "output as JSON")
+  .option("-d, --db <path>", "path to the SQLite cache file")
+  .action(async (options) => {
+    const scraper = new VercelTemplateScraper({ dbPath: options.db });
+    try {
+      const data = scraper.trending(Number(options.hours), Number(options.limit), options.byCategory);
+      if (options.json) {
+        console.log(JSON.stringify(data, null, 2));
+      } else {
+        if ("grouped" in data) {
+          for (const [category, items] of Object.entries(data.grouped)) {
+            console.log(`Trending in ${category}:`);
+            for (const t of items as Array<{ title: string; slug: string; indexed_at: number }>) {
+              const dt = new Date(t.indexed_at * 1000).toISOString().slice(0, 16).replace("T", " ");
+              console.log(`  ${t.title} — ${t.slug} at ${dt}`);
+            }
+          }
+        } else {
+          console.log(`Trending templates in the last ${options.hours} hours (${data.total} total):`);
+          for (const t of data.templates as Array<{ title: string; slug: string; frameworks: string; indexed_at: number }>) {
+            const dt = new Date(t.indexed_at * 1000).toISOString().slice(0, 16).replace("T", " ");
+            console.log(`${t.title} — ${t.slug} (${t.frameworks}) at ${dt}`);
+          }
+        }
+      }
+    } finally {
+      scraper.close();
+    }
+  });
+
 program.parse();

@@ -1,3 +1,4 @@
+import datetime
 import json
 
 import typer
@@ -234,6 +235,89 @@ def stats() -> None:
     for fw, count in sorted(frameworks.items(), key=lambda x: x[1], reverse=True):
         table.add_row(fw, str(count))
     console.print(table)
+
+
+@app.command()
+def recent(
+    hours: int = typer.Option(24, "--hours", "-h", help="How many hours back to look"),
+    limit: int = typer.Option(10, "--limit", "-n", help="Max results"),
+    json_output: bool = typer.Option(False, "--json", help="Output raw JSON"),
+) -> None:
+    """Show templates added to the index recently."""
+    scraper = VercelTemplateScraper()
+    results = scraper.recently_added(hours=hours, limit=limit)
+    if json_output:
+        console.print(json.dumps(results, indent=2, ensure_ascii=False))
+        return
+    if not results:
+        console.print(f"[yellow]No templates indexed in the last {hours} hours.[/yellow]")
+        return
+    table = Table(title=f"Templates indexed in the last {hours} hours")
+    table.add_column("Title", style="cyan")
+    table.add_column("Slug", style="magenta")
+    table.add_column("Framework", style="green")
+    table.add_column("Indexed At", style="yellow")
+    for t in results:
+        indexed = t.get("indexed_at", 0)
+        dt = datetime.datetime.fromtimestamp(indexed).strftime("%Y-%m-%d %H:%M") if indexed else ""
+        table.add_row(t.get("title", ""), t.get("slug", ""), t.get("frameworks", ""), dt)
+    console.print(table)
+
+
+@app.command()
+def trending(
+    hours: int = typer.Option(168, "--hours", "-h", help="How many hours back to look"),
+    limit: int = typer.Option(10, "--limit", "-n", help="Max results per category"),
+    by_category: bool = typer.Option(False, "--by-category", help="Group results by category"),
+    json_output: bool = typer.Option(False, "--json", help="Output raw JSON"),
+) -> None:
+    """Show trending (recently added) templates."""
+    scraper = VercelTemplateScraper()
+    data = scraper.trending(hours=hours, limit=limit, by_category=by_category)
+    if json_output:
+        console.print(json.dumps(data, indent=2, ensure_ascii=False))
+        return
+
+    if by_category:
+        grouped = data.get("grouped", {})
+        if not grouped:
+            console.print(f"[yellow]No trending templates in the last {hours} hours.[/yellow]")
+            return
+        for category, items in sorted(grouped.items()):
+            table = Table(title=f"Trending in {category} ({len(items)})")
+            table.add_column("Title", style="cyan")
+            table.add_column("Slug", style="magenta")
+            table.add_column("Indexed At", style="yellow")
+            for t in items:
+                indexed = t.get("indexed_at", 0)
+                dt = (
+                    datetime.datetime.fromtimestamp(indexed).strftime("%Y-%m-%d %H:%M")
+                    if indexed
+                    else ""
+                )
+                table.add_row(t.get("title", ""), t.get("slug", ""), dt)
+            console.print(table)
+    else:
+        templates = data.get("templates", [])
+        if not templates:
+            console.print(f"[yellow]No trending templates in the last {hours} hours.[/yellow]")
+            return
+        table = Table(
+            title=f"Trending templates in the last {hours} hours ({data.get('total', 0)} total)"
+        )
+        table.add_column("Title", style="cyan")
+        table.add_column("Slug", style="magenta")
+        table.add_column("Framework", style="green")
+        table.add_column("Indexed At", style="yellow")
+        for t in templates:
+            indexed = t.get("indexed_at", 0)
+            dt = (
+                datetime.datetime.fromtimestamp(indexed).strftime("%Y-%m-%d %H:%M")
+                if indexed
+                else ""
+            )
+            table.add_row(t.get("title", ""), t.get("slug", ""), t.get("frameworks", ""), dt)
+        console.print(table)
 
 
 @app.command()

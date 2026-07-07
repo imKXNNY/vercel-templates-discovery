@@ -108,8 +108,10 @@ Endpoints:
 - `GET /health` — health check
 - `GET /templates?q=<query>&limit=<n>` — keyword search
 - `GET /templates/semantic?q=<query>&limit=<n>` — semantic search
-- `GET /templates/{slug}` — get a template by slug
-- `GET /categories` — list categories
+| `GET /templates/recent` — recently added templates
+| `GET /templates/trending` — trending templates (optionally `?by_category=true`)
+| `GET /templates/{slug}` — get a template by slug
+| `GET /categories` — list categories
 
 ## MCP Server
 
@@ -125,6 +127,8 @@ Available tools:
 |------|---------|
 | `search_templates` | Keyword search |
 | `search_templates_semantic` | Semantic search |
+| `list_recent_templates` | Templates added to the index recently |
+| `list_trending_templates` | Trending templates, optionally by category |
 | `get_template` | Get details by slug |
 | `list_categories` | List frameworks/use cases |
 

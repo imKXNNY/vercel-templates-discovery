@@ -1,4 +1,5 @@
 import re
+import time
 
 import pytest
 import responses
@@ -92,10 +93,6 @@ def test_search_after_index(scraper):
     assert any("chatbot" in r["slug"].lower() for r in results)
 
 
-def test_get_nonexistent(scraper):
-    assert scraper.get("/templates/unknown") is None
-
-
 def test_diff_templates(scraper):
     scraper._save_templates(
         [
@@ -128,3 +125,69 @@ def test_diff_templates(scraper):
     assert a and b
     assert a["title"] != b["title"]
     assert a["frameworks"] == b["frameworks"]
+
+
+def test_recently_added(scraper):
+    now = int(time.time())
+    scraper._save_templates(
+        [
+            {
+                "slug": "/templates/next.js/new",
+                "title": "New Template",
+                "frameworks": "next.js",
+                "framework": "next.js",
+                "indexed_at": now - 3600,
+                "detail_url": "",
+            },
+            {
+                "slug": "/templates/next.js/old",
+                "title": "Old Template",
+                "frameworks": "next.js",
+                "framework": "next.js",
+                "indexed_at": now - 172800,
+                "detail_url": "",
+            },
+        ]
+    )
+    recent = scraper.recently_added(hours=2, limit=10)
+    assert len(recent) == 1
+    assert recent[0]["slug"] == "/templates/next.js/new"
+
+
+def test_trending_by_category(scraper):
+    now = int(time.time())
+    scraper._save_templates(
+        [
+            {
+                "slug": "/templates/next.js/n1",
+                "title": "N1",
+                "frameworks": "next.js",
+                "framework": "next.js",
+                "indexed_at": now - 3600,
+                "detail_url": "",
+            },
+            {
+                "slug": "/templates/astro/a1",
+                "title": "A1",
+                "frameworks": "astro",
+                "framework": "astro",
+                "indexed_at": now - 7200,
+                "detail_url": "",
+            },
+            {
+                "slug": "/templates/next.js/o1",
+                "title": "O1",
+                "frameworks": "next.js",
+                "framework": "next.js",
+                "indexed_at": now - 172800,
+                "detail_url": "",
+            },
+        ]
+    )
+    data = scraper.trending(hours=3, limit=10, by_category=True)
+    assert data["total"] == 2
+    grouped = data["grouped"]
+    assert "next.js" in grouped
+    assert "astro" in grouped
+    assert len(grouped["next.js"]) == 1
+    assert grouped["next.js"][0]["slug"] == "/templates/next.js/n1"

@@ -297,6 +297,14 @@ export class VercelTemplateScraper {
     return { count: this.db.count() };
   }
 
+  recentlyAdded(hours = 24, limit?: number): Template[] {
+    return this.db.recentlyAdded(hours, limit);
+  }
+
+  trending(hours = 168, limit = 10, byCategory = false): ReturnType<TemplateDatabase["trending"]> {
+    return this.db.trending(hours, limit, byCategory);
+  }
+
   close() {
     this.db.close();
   }
