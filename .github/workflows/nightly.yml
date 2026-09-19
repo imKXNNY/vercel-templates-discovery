@@ -7,29 +7,45 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   reindex:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
       - name: Install package
         run: pip install -e ".[semantic]"
+
       - name: Index templates
         run: vercel-templates index --reset
+
       - name: Export JSON catalog
         run: vercel-templates export --output catalog.json
-      - name: Commit and push if changed
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add catalog.json
-          if git diff --cached --quiet; then
-            echo "No changes to catalog.json"
-          else
-            git commit -m "chore(catalog): nightly re-index $(date -u +%Y-%m-%d)"
-            git push
-          fi
+
+      - name: Date stamp
+        id: date
+        run: echo "date=$(date -u +%Y-%m-%d)" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'chore(catalog): nightly re-index ${{ steps.date.outputs.date }}'
+          title: 'Nightly re-index ${{ steps.date.outputs.date }}'
+          body: |
+            Automated nightly re-index of the Vercel Templates catalog.
+
+            - `catalog.json` refreshed from Vercel Templates
+            - Run locally: `vercel-templates index --reset && vercel-templates export --output catalog.json`
+          branch: nightly-reindex-${{ steps.date.outputs.date }}
+          base: master
+          delete-branch: false
+          labels: |
+            automated
+            catalog
+

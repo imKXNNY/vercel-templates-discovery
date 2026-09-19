@@ -3,14 +3,6 @@ on:
   push:
     tags:
       - 'v*'
-    branches:
-      - master
-  pull_request:
-    paths:
-      - Dockerfile
-      - .dockerignore
-      - vercel_templates/**
-      - pyproject.toml
 
 permissions:
   contents: read
