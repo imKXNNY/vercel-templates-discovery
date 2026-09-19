@@ -29,8 +29,3 @@ jobs:
         run: mypy vercel_templates
       - name: Test
         run: pytest --cov=vercel_templates --cov-report=xml
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        with:
-          files: ./coverage.xml
-          fail_ci_if_error: false
