@@ -1,38 +1,69 @@
 # Project Owner Status: Vercel Templates Discovery
 
-**Owner:** Jarvis (Windows Desktop Hermes)  
-**Repo:** https://github.com/imKXNNY/vercel-templates-discovery (private)  
-**Last updated:** 2026-08-17
+**Owner:** Jarvis (Windows Desktop Hermes)
+**Repo:** https://github.com/imKXNNY/vercel-templates-discovery (public)
+**Last updated:** 2026-08-31
 
 ## Mission
 
 Build the standard agentic discovery layer for Vercel Templates — a searchable, always-up-to-date catalog that AI agents and developers can query to find the best starting point for any project.
 
-## Current state
+## Current state (v1.0.0, public)
 
-- **Catalog:** 293 templates indexed (up from ~284)
-- **CLI health:** `vercel-templates stats` and `vercel-templates index -c 2` both pass
-- **Test health:** `pytest` — 35 passed, 1 deprecation warning (Starlette/httpx)
-- **Branch:** `master` is now the source of truth; the old `chore/repo-security-hardening` local branch was stale and its remote was removed, so work was stashed and master was fast-forwarded
-- **GitHub hygiene:** Issue templates, CODEOWNERS, and PR template landed on master via fast-forward
-- **Open issues:** 1 — #21 (ADOS workflow-pack idea), unassigned, no milestone
-- **Milestones M2–M6:** 0 open issues each; all previously tracked items are closed
+- Working CLI indexes the full Vercel Templates gallery (**297 templates**, up from 284)
+- SQLite cache with FTS5 keyword search
+- Extracts title, description, GitHub URL, owner, repo, install command
+- **README extraction complete:** non-empty `readme_text` for the vast majority of templates
+- **MCP server implemented:** exposes `search_templates`, `get_template`, `list_categories` via stdio JSON-RPC
+- **TypeScript / Node port complete:** merged via PR #17
+- **REST API server** (`vercel-templates serve`) with FastAPI/uvicorn endpoints
+- **CLI smoke tests** with mocked HTTP responses
+- **CHANGELOG.md** following Keep a Changelog format
+- **Cross-agent skill** published on [skills.sh](https://skills.sh/imkxnny/vercel-templates-discovery)
+- **PyPI:** `pip install vercel-templates-discovery` (v1.0.0)
+- **npm:** `npm install -g @imkxnny/vercel-templates-discovery` (v1.0.0)
+- **Docker:** `docker run --rm ghcr.io/imkxnnny/vercel-templates-discovery:1.0.0 vercel-templates --help`
+- CI, tests, README, CONTRIBUTING guide, CHANGELOG all in place
+- **v1.0.0 released** 2026-08-07 (commit d95e5ed)
+- **Repo made public** alongside v1.0.0 release
+- CODEOWNERS, issue templates, and PR template added (#23)
+- Feedback section in README with GitHub issues and Vercel Community link
+
+## Milestone status
+
+| Milestone | Status | Notes |
+|-----------|--------|-------|
+| M2: Tests + CHANGELOG | ✅ Complete | Issues #1, #2, #3 closed |
+| M3: MCP + Skill + REST | ✅ Complete | Issues #4, #5, #6 closed |
+| M4: PyPI + npm + Docker + TS | ✅ Complete | Issues #7, #8, #9, #10 closed |
+| M5: Semantic search + Comparison + Recommend + Trending | ✅ Complete | Issues #11, #12, #19, #20 closed |
+| M6: ToS review + Public release | ✅ Complete | Issues #13, #14 closed; v1.0.0 public |
+| Skill publishing | ✅ Complete | Issue #22 closed |
+
+## Open issues
+
+| # | Title | Created |
+|---|-------|---------|
+| 21 | (Idea) Add a ADOS-type Workflow-pack to the project, for common reusable workflows with this tool | 2026-07-07 |
+
+Only **1 open issue** remains (an idea/proposal). All 21 closed issues delivered.
 
 ## Priority backlog (next-best actions)
 
-1. **Scope the ADOS workflow-pack (#21)** — turn the rough idea into concrete, reusable agentic workflows. Draft a design doc and split out the first implementable workflow.
-2. **Address pytest deprecation warning** — install `httpx` >= 0.28 (Starlette now prefers `httpx` over the older `requests`-based test client) or pin the test client dependency.
-3. **Consider a patch release** — catalog grew ~3%; if README/install-command coverage changed materially, publish v0.2.4.
+1. **Post GitHub Discussion draft** — `docs/GITHUB_DISCUSSION_DRAFT.md` is ready; publish to Vercel community forum
+2. **Send Vercel outreach email** — `docs/VERCEL_OUTREACH_DRAFT.md` is ready; reach out to Vercel team
+3. **ADOS workflow-pack** (#21) — decide repo location (this repo vs webton-ados) and implement the first workflow
+4. **Semantic search hardening** — ensure Ollama fallback is smooth for users without local embeddings
 
 ## Decision log
 
-- Stay private until M6 / ToS review complete.
+- **Repo is now public** as of v1.0.0 release (was private through M6).
 - Use pure Python (requests + BeautifulSoup) for now; Crawl4AI failed on MSYS native deps.
 - TypeScript port targets WSL/Unix environments; Windows-native `better-sqlite3` builds are not supported on this host.
 - Nightly re-index cron keeps the local cache fresh.
 - ADOS layer precedence: repo > ADOS_HOME > package fallback. Repo layer is active.
-- Discord delivery is now configured via home channel (#jarvis) on native Windows Hermes.
-- `PYTHONPATH` must be cleared when invoking `uv run` on native Windows, otherwise the Hermes venv numpy (cp311) leaks into the project venv (cp312) and crashes the CLI.
+- Discord delivery configured via home channel (#jarvis) on native Windows Hermes.
+- Outreach drafts prepared but not yet sent — awaiting go-ahead for public posting.
 
 ## Auto-maintenance
 
@@ -40,7 +71,14 @@ Build the standard agentic discovery layer for Vercel Templates — a searchable
 - Weekly: `vercel-templates-owner-checkin` reviews issues, updates this file, and reports to Kenny
 - Daily: `vercel-templates-daily-update` delivers to Discord home channel (#jarvis)
 
+## Untracked files
+
+- `docs/GITHUB_DISCUSSION_DRAFT.md` — ready to publish
+- `docs/VERCEL_OUTREACH_DRAFT.md` — ready to send
+- `uv.lock` — generated by uv, can be committed
+
 ## Notes for next session
 
-- Issue #21 is the only open item. It is still an idea, not a spec — the highest-value next step is to turn it into a concrete workflow-pack design.
-- No blockers. Safe to proceed with #21 scoping and the httpx warning cleanup.
+- All M2-M6 milestones complete. Project is in public maintenance + outreach phase.
+- Issue #21 is the only open issue — a proposal, not a bug or blocker.
+- Two outreach drafts are sitting untracked. Publishing them is the highest-leverage next step to get community feedback and potentially catch Vercel's attention.
